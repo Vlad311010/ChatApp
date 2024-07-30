@@ -1,0 +1,112 @@
+﻿@page "/chat/{chatName}"
+@rendermode InteractiveWebAssembly
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
+
+
+@implements IAsyncDisposable
+
+<PageTitle>Chat</PageTitle>
+<div class="form-group">
+    <label>
+        Message:
+        <input @bind="messageInput" size="50" />
+    </label>
+</div>
+<button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+
+<hr>
+
+<ul class="chat_window" id="messagesList">
+    @foreach (var message in messages)
+    {
+        if (hubConnection?.ConnectionId == @message.Item1) 
+        {
+            <li class="message-own border border-primary ">@message.Item2</li>
+        }
+        else 
+        {
+            <li class="message-other border border-primary ">@message.Item2</li>
+        }
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public string? ChatName { get; set; }
+
+
+    private HubConnection? hubConnection;
+    private List<Tuple<string, string>> messages = new List<Tuple<string, string>>();
+
+    private string? messageInput;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .Build();
+
+
+
+        /*hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"), options =>
+                {
+                options.AccessTokenProvider = () => Task.FromResult(userInput);
+            })
+            .Build();*/
+
+        
+        hubConnection.On<string, string, string>("ReceiveMessage", (userId, cahtName, message) =>
+        {
+            AddMessage(userId, message);
+        });
+
+        hubConnection.On<string>("GroupConnect", (message) =>
+        {
+            Console.WriteLine(message);
+        });
+
+        hubConnection.On<string>("GroupDisconnect", (message) =>
+        {
+            Console.WriteLine(message);
+        });
+
+        await hubConnection.StartAsync();
+
+        await hubConnection.SendAsync("AddToGroup", ChatName);
+        // Console.WriteLine("OnInitializedAsync");
+    }
+
+    private async Task Send()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", "userId", ChatName, messageInput);
+
+            // add to db
+            // activate OnReceiveMessage function with signalR
+            // AddMessage("userId", messageInput!);
+        }
+    }
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    private void AddMessage(string senderId, string message) 
+    {
+        var encodedMsg = $"{message}";
+        messages.Add(new (senderId, encodedMsg));
+        InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // TODO: check when does dispose is called
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("RemoveFromGroup", ChatName);
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
