@@ -22,9 +22,14 @@ namespace ChatApp
             httpContext.Response.Redirect(returnUrl);
         }
 
-        private static async Task<IEnumerable<Message>> GetChatMessages(HttpContext httpContext, MessagesRepository messagesRepo, [FromRoute] string chatName)
+        // private static async Task<ActionResult<IEnumerable<Message>>> GetChatMessages(HttpContext httpContext, MessagesRepository messagesRepo, [FromRoute] string chatName)
+        private static async Task<IResult> GetChatMessages(HttpContext httpContext, MessagesRepository messagesRepo, [FromRoute] string chatName)
         {
-            return await Task.FromResult(messagesRepo.ChatMessages(chatName)) ;
+            List<Message> messages = await Task.FromResult(messagesRepo.ChatMessages(chatName).ToList());
+            return Results.Ok(messages);
+            // return messages;
+            // return Results.NoContent();
+            // return Results.Ok(messages);
         }
     }
 }

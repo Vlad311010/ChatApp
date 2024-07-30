@@ -1,8 +1,7 @@
 ﻿using ChatApp.Client.Models;
-using System.Net.Http;
 using System.Net.Http.Json;
 
-namespace ChatApp.Client.Pages
+namespace ChatApp.Client.Services
 {
     public class MessagesService
     {
@@ -15,7 +14,7 @@ namespace ChatApp.Client.Pages
 
         public async Task<List<Message>> GetMessagesAsync()
         {
-            return await httpClient.GetFromJsonAsync<List<Message>>("api/messages");
+            return await httpClient.GetFromJsonAsync<List<Message>>("api/chat/Test01/messages");
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿@page "/chat/{chatName}"
-@rendermode InteractiveWebAssembly
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using ChatApp.Client.Models
+@using ChatApp.Client.Services
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
-
+@inject MessagesService MessagesService
 
 @implements IAsyncDisposable
 
@@ -17,27 +19,25 @@
 
 <hr>
 
+
+
+@if (chatMessages != null) {
 <ul class="chat_window" id="messagesList">
-    @foreach (var message in messages)
+    @foreach (var message in chatMessages)
     {
-        if (hubConnection?.ConnectionId == @message.Item1) 
-        {
-            <li class="message-own border border-primary ">@message.Item2</li>
-        }
-        else 
-        {
-            <li class="message-other border border-primary ">@message.Item2</li>
-        }
+        <li class="message-own border border-primary ">@message.Content</li>
     }
 </ul>
+}
+
 
 @code {
     [Parameter]
     public string? ChatName { get; set; }
 
-
     private HubConnection? hubConnection;
     private List<Tuple<string, string>> messages = new List<Tuple<string, string>>();
+    private List<Message> chatMessages;
 
     private string? messageInput;
 
@@ -48,15 +48,6 @@
             .Build();
 
 
-
-        /*hubConnection = new HubConnectionBuilder()
-            .WithUrl(Navigation.ToAbsoluteUri("/chathub"), options =>
-                {
-                options.AccessTokenProvider = () => Task.FromResult(userInput);
-            })
-            .Build();*/
-
-        
         hubConnection.On<string, string, string>("ReceiveMessage", (userId, cahtName, message) =>
         {
             AddMessage(userId, message);
@@ -75,7 +66,8 @@
         await hubConnection.StartAsync();
 
         await hubConnection.SendAsync("AddToGroup", ChatName);
-        // Console.WriteLine("OnInitializedAsync");
+
+        chatMessages = await MessagesService.GetMessagesAsync();
     }
 
     private async Task Send()

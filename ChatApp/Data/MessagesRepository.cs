@@ -24,7 +24,8 @@ namespace ChatApp.Data
 
         public IEnumerable<Message> ChatMessages(string chatName)
         {
-            return messages.Where(u => u.Chat.Name == chatName);
+            return messages.Where(u => u.ChatId == 0);
+            // return messages.Where(u => u.Chat.Name == chatName);
         }
 
         public void SendMessage(int userId, int chatId, string content)
