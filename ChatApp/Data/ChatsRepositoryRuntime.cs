@@ -1,8 +1,10 @@
 ﻿using ChatApp.Client.Models;
+using ChatApp.Client.Pages;
+using ChatApp.Interfaces;
 
 namespace ChatApp.Data
 {
-    public class ChatsRepository
+    public class ChatsRepositoryRuntime : IChatsRepository
     {
         private List<ChatGroup> chatGroups = new List<ChatGroup>()
         {
@@ -11,14 +13,14 @@ namespace ChatApp.Data
             new ChatGroup() { Id = 2, Name = "Test02", OwnerId = 0 }
         };
 
-        public IEnumerable<ChatGroup> All()
+        public Task<IEnumerable<ChatGroup>> All()
         {
-            return chatGroups;
+            return Task.FromResult<IEnumerable<ChatGroup>>(chatGroups);
         }
 
-        public ChatGroup? GetByName(string chatName)
+        public Task<ChatGroup?> GetByName(string chatName)
         {
-            return chatGroups.Where(u => u.Name == chatName).SingleOrDefault();
+            return Task.FromResult(chatGroups.Where(u => u.Name == chatName).SingleOrDefault());
         }
     }
 }

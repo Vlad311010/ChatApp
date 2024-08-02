@@ -1,13 +1,13 @@
 using ChatApp.Components;
 using ChatApp.Hubs;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 using ChatApp.Data;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
 using ChatApp;
+using Microsoft.EntityFrameworkCore;
+using ChatApp.Interfaces;
+using ChatApp.Client;
+using Microsoft.AspNetCore.Components.Authorization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +19,14 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSignalR();
 
 
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
+builder.Services.AddAuthorizationCore();
+
+builder.Services.AddAuthorization(options =>
+{
+});
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions => {
     cookieOptions.ExpireTimeSpan = TimeSpan.FromMinutes(20);
     cookieOptions.LoginPath = "/Forbidden";
@@ -32,18 +40,17 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     };
 });
 
-builder.Services.AddAuthorization(options =>
-{
-});
 
-/*var connectionString = builder.Configuration.GetConnectionString("AppDb");
+
+
+var connectionString = builder.Configuration.GetConnectionString("AppDb");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString)
-);*/
+);
 
-builder.Services.AddScoped<UsersRepository>();
-builder.Services.AddScoped<ChatsRepository>();
-builder.Services.AddScoped<MessagesRepository>();
+builder.Services.AddScoped<IUsersRepository, UsersRepositoryDb>();
+builder.Services.AddScoped<IChatsRepository, ChatsRepositoryDb>();
+builder.Services.AddScoped<IMessagesRepository, MessagesRepositoryDb>();
 
 var app = builder.Build();
 

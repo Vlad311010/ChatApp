@@ -1,0 +1,118 @@
+﻿@page "/login"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using ChatApp.Client.Models
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using ChatApp.Client.Services
+@inject NavigationManager NavigationManager
+@inject CustomAuthenticationStateProvider AuthenticationStateProvider
+@inject ApiAccess Api
+@implements IDisposable
+
+<PageTitle>Login</PageTitle>
+@if (isAuthented)
+{
+    <h1>You are already logged in as @userName</h1>
+
+    <form action="api/Logout" method="post" class="col-md-5">
+        <AntiforgeryToken />
+        <input type="hidden" name="ReturnUrl" value="\" />
+        <button class="w-100 btn btn-lg btn-secondary" type="submit">
+            Logout
+        </button>
+    </form>
+}
+else {
+    <h1>Log in</h1>
+    <div class="row">
+        <div class="col-md-5">
+            <section>
+                <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="loginForm">
+                    <h2>Use a local account to log in.</h2>
+                    <hr />
+                    <ValidationSummary class="text-danger" role="alert" />
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="Input.Login" class="form-control" autocomplete="false" aria-required="true" placeholder="name@example.com" />
+                        <label for="email" class="form-label">Email</label>
+                        <ValidationMessage For="() => Input.Login" class="text-danger" />
+                    </div>
+                    <div class="form-floating mb-3">
+                        <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                        <label for="password" class="form-label">Password</label>
+                        <ValidationMessage For="() => Input.Password" class="text-danger" />
+                    </div>
+                    <div class="text-danger text-center py-3">@errorMessage</div>
+                    <div>
+                        <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                    </div>
+                </EditForm>           
+            </section>
+        </div>
+    </div>
+}
+
+
+
+@code {
+    private string? errorMessage;
+
+    [SupplyParameterFromForm]
+    private UserData Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+
+    private bool isAuthented = false;
+    private string userName = "";
+
+    private async void UpdateAuthenticationState(Task<AuthenticationState> task)
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        isAuthented = state.User.Identity!.IsAuthenticated;
+        userName = state.User.Identity.Name!;
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged += UpdateAuthenticationState;
+        UpdateAuthenticationState(AuthenticationStateProvider.GetAuthenticationStateAsync());
+    }
+
+    public void Dispose()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged -= UpdateAuthenticationState;
+    }
+
+
+    public async Task LogoutUser()
+    {
+        await Api.LogoutAsync();
+        AuthenticationStateProvider.SignOut();
+    }
+
+    public async Task LoginUser()
+    {
+
+        UserData? userData = await Api.LoginAsync(Input);
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (userData != null)
+        {
+            AuthenticationStateProvider.LoginUser(userData.Login!);
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        public string Login { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
+    }
+}

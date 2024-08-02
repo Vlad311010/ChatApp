@@ -1,0 +1,25 @@
+﻿@using ChatApp.Client.Models
+<div class="container mt-3 chat-message">
+    <div class="@(type) mb-3 p-3 border rounded">
+        <div class="d-flex justify-content-between">
+            <div class="sender-name fw-bold">@(type == "sent" ? "You" : messageModel.User.Login)</div>
+            <div class="timestamp text-muted">@messageModel.CreatedAt.TimeOfDay.ToString("hh\\:mm") @messageModel.CreatedAt.Date.ToString("MM-dd-yyyy")</div>
+        </div>
+        <div class="message-content mt-2">
+            @messageModel.Content
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string type { get; set; } = "sent";
+
+    [Parameter, EditorRequired]
+    public Message messageModel { get; set; } = default!;
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+}

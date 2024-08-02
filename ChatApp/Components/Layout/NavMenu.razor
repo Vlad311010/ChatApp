@@ -1,6 +1,6 @@
 ﻿@using ChatApp.Client.Models
 @using ChatApp.Data
-@inject ChatsRepository Chats
+@inject IChatsRepository Chats
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -11,54 +11,18 @@
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <!--
     <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="home" >
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Chat
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="auth">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Auth Required
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="login">
-                <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Login
-            </NavLink>
-        </div>
-    </nav>
-    -->
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            @foreach (ChatGroup chat in Chats.All())
-            {
-                <NavLink class="nav-link" href="@("chat/" + chat.Name)">
-                    @chat.Name
-                </NavLink>
-            }
-        </div>
+        @if (chats != null && chats.Length > 0) 
+        {
+            <div class="nav-item px-3">
+                @foreach (ChatGroup chat in chats)
+                {
+                    <NavLink class="nav-link" href="@("chat/" + chat.Name)">
+                        @chat.Name
+                    </NavLink>
+                }
+            </div>
+        }
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="home">
@@ -67,6 +31,14 @@
         </div>
 
     </nav>
-    
 </div>
+
+@code {
+    private ChatGroup[] chats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        chats = (await Chats.All()).ToArray();
+    }
+}
 

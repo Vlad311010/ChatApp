@@ -50,27 +50,18 @@ h1:focus {
     border-color: #929292;
 }
 
-
-.message-own {
-    background-color: darkslategray;
-    list-style-type: none;
-    width: fit-content;
-    block-size: fit-content;
-    text-align: left;
-    margin-left: auto;
-    margin-right: 0;
-    margin-top: 3px;
-    color: white;
-    padding: 0.2rem 0.5rem 0.0rem 0.2rem;
+.chat-message .sent {
+    background-color: #e2f7e2;
 }
 
-.message-other {
-    background-color: gray;
-    list-style-type: none;
-    width: fit-content;
-    block-size: fit-content;
+.chat-message .received {
+    background-color: #96d9ed;
+}
+
+.sent .message-content {
+    text-align: right;
+}
+
+.received .message-content {
     text-align: left;
-    margin-top: 3px;
-    color: white;
-    padding: 0.2rem 0.2rem 0.0rem 0.5rem;
 }

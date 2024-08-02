@@ -1,4 +1,4 @@
-﻿@page "/login"
+﻿@page "/loginS"
 @using ChatApp.Client.Models
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.Cookies
@@ -6,8 +6,9 @@
 @using System.ComponentModel.DataAnnotations
 @using ChatApp.Data
 @using System.Security.Claims
-@inject UsersRepository Users
+@inject IUsersRepository Users
 @inject NavigationManager NavigationManager
+@inject CustomAuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Login</PageTitle>
 
@@ -81,21 +82,17 @@ else {
         }
     }
 
-    private void ButtonClick(MouseEventArgs args)
-    {
-        Console.WriteLine("ButtonClicked");
-    }
-
-
     public async Task LogoutUser()
     {
-        Console.WriteLine("LogoutUser called");
         await HttpContext.SignOutAsync();
     }
 
     public async Task LoginUser()
     {
-        User? user = Users.GetByLogin(Input.Login);
+        var a = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        AuthenticationStateProvider.LoginUser(Input.Login);
+        /*
+        User? user = await Users.GetByLogin(Input.Login);
         if (user == null) {
             errorMessage = "Error: Invalid login attempt.";
             return;
@@ -104,7 +101,8 @@ else {
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, Input.Login),
-            new Claim(ClaimTypes.NameIdentifier, Input.Login)
+            new Claim(ClaimTypes.NameIdentifier, Input.Login),
+            new Claim("UserId", user.Id.ToString())
         };
 
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -116,6 +114,7 @@ else {
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
         NavigationManager.NavigateTo("\\");
+        */
 
         /*
         // This doesn't count login failures towards account lockout

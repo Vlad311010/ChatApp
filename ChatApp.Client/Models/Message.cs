@@ -4,6 +4,7 @@ namespace ChatApp.Client.Models
 {
     public class Message
     {
+        public int Id { get; set; }
         public int UserId { get; set; }
         public User User { get; set; } = default!;
         public int ChatId { get; set; }
@@ -20,6 +21,14 @@ namespace ChatApp.Client.Models
             ChatId = chatId;
             Content = content;
             CreatedAt = DateTime.Now;
+        }
+
+        public Message(int userId, int chatId, string content, DateTime dateTime)
+        {
+            UserId = userId;
+            ChatId = chatId;
+            Content = content;
+            CreatedAt = dateTime;
         }
     }
 }

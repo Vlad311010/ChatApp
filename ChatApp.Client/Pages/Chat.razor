@@ -2,9 +2,10 @@
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @using ChatApp.Client.Models
 @using ChatApp.Client.Services
+@using ChatApp.Client.ViewComponents
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
-@inject MessagesService MessagesService
+@inject ApiAccess MessagesService
 
 @implements IAsyncDisposable
 
@@ -19,25 +20,49 @@
 
 <hr>
 
-
-
 @if (chatMessages != null) {
-<ul class="chat_window" id="messagesList">
+<div class="chat_window" id="messagesList">
     @foreach (var message in chatMessages)
     {
-        <li class="message-own border border-primary ">@message.Content</li>
+        <ChatMessage type="sent" messageModel="message" />
+        <ChatMessage type="received" messageModel="message" />
     }
-</ul>
+    <div class="container mt-3 chat-message">
+        <div class="received mb-3 p-3 border rounded">
+            <div class="d-flex justify-content-between">
+                <div class="sender-name fw-bold">John Doe</div>
+                <div class="timestamp text-muted">12:34 PM</div>
+            </div>
+            <div class="message-content mt-2">
+                This is a sample chat message content.
+            </div>
+        </div>
+    </div>
+        <div class="container mt-3 chat-message">
+            <div class="sent mb-3 p-3 border rounded">
+                <div class="d-flex justify-content-between">
+                    <div class="timestamp text-muted">12:34 PM</div>
+                    <div class="sender-name fw-bold">You</div>
+                </div>
+                <div class="message-content mt-2">
+                    This is a sample chat message content.
+                </div>
+            </div>
+        </div>
+</div>
 }
 
 
 @code {
     [Parameter]
-    public string? ChatName { get; set; }
+    public string ChatName { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
 
     private HubConnection? hubConnection;
-    private List<Tuple<string, string>> messages = new List<Tuple<string, string>>();
-    private List<Message> chatMessages;
+    private List<Message> chatMessages = default!;
+    private int currentUsedId = -1;
 
     private string? messageInput;
 
@@ -48,9 +73,17 @@
             .Build();
 
 
-        hubConnection.On<string, string, string>("ReceiveMessage", (userId, cahtName, message) =>
+        hubConnection.On<string, string, string>("ReceiveMessage", (userIdStr, chatIdStr, message) =>
         {
-            AddMessage(userId, message);
+            int userId;
+            int chatId;
+
+            if (Int32.TryParse(userIdStr, out userId) && Int32.TryParse(chatIdStr, out chatId))
+            {
+                AddMessage(userId, chatId, message);
+            }
+            // else message error
+
         });
 
         hubConnection.On<string>("GroupConnect", (message) =>
@@ -67,34 +100,49 @@
 
         await hubConnection.SendAsync("AddToGroup", ChatName);
 
-        chatMessages = await MessagesService.GetMessagesAsync();
+        chatMessages = await MessagesService.GetMessagesAsync(ChatName);
+
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                Console.WriteLine($"{user.Identity.Name} is authenticated.");
+            }
+            else
+            {
+                Console.WriteLine("authenticated Failed Inner");
+            }
+        }
+        else
+        {
+            Console.WriteLine("authenticated Failed");
+        }
+
     }
 
     private async Task Send()
     {
-        if (hubConnection is not null)
+        if (!string.IsNullOrEmpty(messageInput) && hubConnection is not null)
         {
-            await hubConnection.SendAsync("SendMessage", "userId", ChatName, messageInput);
-
-            // add to db
-            // activate OnReceiveMessage function with signalR
-            // AddMessage("userId", messageInput!);
+            await hubConnection.SendAsync("SendMessage", "1", ChatName, messageInput);
         }
     }
 
     public bool IsConnected =>
         hubConnection?.State == HubConnectionState.Connected;
 
-    private void AddMessage(string senderId, string message) 
+    private void AddMessage(int senderId, int chatId, string message) 
     {
         var encodedMsg = $"{message}";
-        messages.Add(new (senderId, encodedMsg));
+        chatMessages.Add(new Message(senderId, chatId, encodedMsg));
         InvokeAsync(StateHasChanged);
     }
 
     public async ValueTask DisposeAsync()
     {
-        // TODO: check when does dispose is called
         if (hubConnection is not null)
         {
             await hubConnection.SendAsync("RemoveFromGroup", ChatName);

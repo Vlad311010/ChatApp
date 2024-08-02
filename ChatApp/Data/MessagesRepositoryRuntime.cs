@@ -1,13 +1,12 @@
 ﻿using ChatApp.Client.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Collections;
+using ChatApp.Interfaces;
 
 namespace ChatApp.Data
 {
-    public class MessagesRepository
+    public class MessagesRepositoryRuntime : IMessagesRepository
     {
-        private readonly ChatsRepository chatsRepository;
-        public MessagesRepository(ChatsRepository chatsRepository) 
+        private readonly IChatsRepository chatsRepository;
+        public MessagesRepositoryRuntime(IChatsRepository chatsRepository) 
         {
             this.chatsRepository = chatsRepository;
         }
@@ -17,26 +16,27 @@ namespace ChatApp.Data
             new Message() { ChatId = 0, UserId = 0, CreatedAt = DateTime.UtcNow, Content = "Hello, world" },
         };
 
-        public IEnumerable<Message> ChatMessages(int chatId)
+        public Task<IEnumerable<Message>> ChatMessages(int chatId)
         {
-            return messages.Where(u => u.ChatId == chatId);
+            return Task.FromResult(messages.Where(u => u.ChatId == chatId));
         }
 
-        public IEnumerable<Message> ChatMessages(string chatName)
+        public Task<IEnumerable<Message>> ChatMessages(string chatName)
         {
-            return messages.Where(u => u.ChatId == 0);
+            return Task.FromResult(messages.Where(u => u.ChatId == 0));
             // return messages.Where(u => u.Chat.Name == chatName);
         }
 
-        public void SendMessage(int userId, int chatId, string content)
+        public Task SendMessage(int userId, int chatId, string content)
         { 
             Message message = new Message(userId, chatId, content);
             messages.Add(message);
+            return Task.CompletedTask;
         }
 
-        public void SendMessage(int userId, string chatName, string content)
+        public async Task SendMessage(int userId, string chatName, string content)
         {
-            ChatGroup? chat = chatsRepository.GetByName(chatName);
+            ChatGroup? chat = await chatsRepository.GetByName(chatName);
             if (chat == null)
                 return;
 
@@ -44,6 +44,5 @@ namespace ChatApp.Data
             Message message = new Message(userId, chatId, content);
             messages.Add(message);
         }
-
     }
 }
