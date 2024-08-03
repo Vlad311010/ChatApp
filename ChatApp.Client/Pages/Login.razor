@@ -32,7 +32,7 @@ else {
                     <hr />
                     <ValidationSummary class="text-danger" role="alert" />
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="Input.Login" class="form-control" autocomplete="false" aria-required="true" placeholder="name@example.com" />
+                        <InputText @bind-Value="Input.Login" class="form-control" autocomplete="false" aria-required="true" placeholder="namexample" />
                         <label for="email" class="form-label">Email</label>
                         <ValidationMessage For="() => Input.Login" class="text-danger" />
                     </div>
@@ -44,7 +44,10 @@ else {
                     <div class="text-danger text-center py-3">@errorMessage</div>
                     <div>
                         <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                        <button type="submit" class="btn btn-lg btn-secondary" @onclick="@(() => LoginRuf())">Ruf</button>
+                        <button type="submit" class="btn btn-lg btn-secondary" @onclick="@(() => LoginAzter())">Azter</button>
                     </div>
+
                 </EditForm>           
             </section>
         </div>
@@ -54,7 +57,6 @@ else {
 
 
 @code {
-    private string? errorMessage;
 
     [SupplyParameterFromForm]
     private UserData Input { get; set; } = new();
@@ -62,7 +64,7 @@ else {
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
-
+    private string? errorMessage;
     private bool isAuthented = false;
     private string userName = "";
 
@@ -74,7 +76,7 @@ else {
     }
 
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         AuthenticationStateProvider.AuthenticationStateChanged += UpdateAuthenticationState;
         UpdateAuthenticationState(AuthenticationStateProvider.GetAuthenticationStateAsync());
@@ -94,25 +96,32 @@ else {
 
     public async Task LoginUser()
     {
-
         UserData? userData = await Api.LoginAsync(Input);
         var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         if (userData != null)
         {
-            AuthenticationStateProvider.LoginUser(userData.Login!);
+            AuthenticationStateProvider.LoginUser(userData);
+        }
+        else
+        {
+            errorMessage = "Error: Invalid login attempt.";
         }
     }
 
-    private sealed class InputModel
+    public async Task LoginRuf()
     {
-        [Required]
-        public string Login { get; set; } = "";
-
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = "";
-
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
+        UserData inputModel = new UserData() { Id = 1, Login="Ruf", Password="1" };
+        UserData? userData = await Api.LoginAsync(inputModel);
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        AuthenticationStateProvider.LoginUser(userData);
     }
+
+    public async Task LoginAzter()
+    {
+        UserData inputModel = new UserData() { Id = 2, Login = "Azter", Password = "1" };
+        UserData? userData = await Api.LoginAsync(inputModel);
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        AuthenticationStateProvider.LoginUser(userData);
+    }
+
 }

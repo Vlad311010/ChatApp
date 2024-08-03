@@ -8,6 +8,7 @@ using ChatApp.Client;
 using ChatApp.Migrations;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Identity.Data;
 
 namespace ChatApp
 {
@@ -17,6 +18,7 @@ namespace ChatApp
         {
             group.MapPost("/logout", Logout).WithName("Logout");
             group.MapPost("/login", Login).WithName("Login");
+            group.MapPost("/AutRefresh", AuthenticationRefresh).WithName("AuthenticationRefresh");
             group.MapGet("/chat/{chatName}/messages", GetChatMessages).WithName("GetChatMessages");
 
             return group;
@@ -50,14 +52,44 @@ namespace ChatApp
 
             await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
             user.Password = "";
-            return Results.Ok(user);
-            
+            return Results.Ok(user);   
         }
 
         private static async Task Logout(HttpContext httpContext)
         {
             await httpContext.SignOutAsync();
             httpContext.Response.Redirect("\\");
+        }
+
+        private static async Task<IResult> AuthenticationRefresh(HttpContext httpContext, IUsersRepository users)
+        {
+            string? loggedInUserLogin = httpContext.User.Identity?.Name;
+            if (loggedInUserLogin == null)
+                return Results.NoContent();
+
+            User? user = await users.GetByLogin(loggedInUserLogin);
+            if (user == null)
+            {
+                return Results.NoContent();
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Login),
+                new Claim(ClaimTypes.NameIdentifier, user.Login),
+                new Claim("UserId", user.Id.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var authProperties = new AuthenticationProperties
+            {
+                AllowRefresh = true,
+            };
+
+            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+            user.Password = "";
+            return Results.Ok(user);
         }
 
         private static async Task<IResult> GetChatMessages(HttpContext httpContext, IMessagesRepository messagesRepo, [FromRoute] string chatName)

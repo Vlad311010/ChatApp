@@ -1,6 +1,7 @@
 ﻿using ChatApp.Client.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 
@@ -12,8 +13,6 @@ namespace ChatApp.Client
         private static AuthenticationState? currentAuthenticationState = null;
 
         public ClaimsPrincipal AnonymousUser => new(new ClaimsIdentity(Array.Empty<Claim>()));
-
-
         private ClaimsPrincipal FakedUser
         {
             get
@@ -39,23 +38,13 @@ namespace ChatApp.Client
             );
         }
 
-        public void LoginUser(string login)
-        {
-            Console.WriteLine("login attempt: " + login);
-            // User? user = await usersRepository.GetByLogin(login);
-            User? user = new User(login, "1");
-            if (user == null)
-            {
-                Console.WriteLine("Error: Invalid login attempt.");
-                // errorMessage = "Error: Invalid login attempt.";
-                return;
-            }
-            
+        public void LoginUser(UserData user)
+        {            
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, login),
-                new Claim(ClaimTypes.NameIdentifier, login),
-                new Claim("UserId", user.Id.ToString())
+                new Claim(ClaimTypes.Name, user.Login!),
+                new Claim(ClaimTypes.NameIdentifier, user.Login!),
+                new Claim("UserId", user.Id.ToString()!)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, "ClientSide");

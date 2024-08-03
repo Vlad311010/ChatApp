@@ -18,7 +18,8 @@ namespace ChatApp.Client.Services
 
         public async Task<List<Message>> GetMessagesAsync(string ChatName)
         {
-            return await httpClient.GetFromJsonAsync<List<Message>>(string.Format("api/chat/{0}/messages", ChatName));
+            List<Message>? messages = await httpClient.GetFromJsonAsync<List<Message>>(string.Format("api/chat/{0}/messages", ChatName));
+            return messages == null ? new List<Message>() : messages;
         }
 
         public async Task<UserData?> LoginAsync(UserData loginRequest)
@@ -37,6 +38,22 @@ namespace ChatApp.Client.Services
         public async Task LogoutAsync()
         {
             HttpResponseMessage response = await httpClient.PostAsync("api/logout", null);
+        }
+
+        public async Task<UserData?> AuthenticationRefreshAsync()
+        {
+            HttpResponseMessage response = await httpClient.PostAsync("api/AutRefresh", null);
+            response.EnsureSuccessStatusCode();
+            
+            string responseContent = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(responseContent))
+                return null;
+
+            UserData? userData = JsonSerializer.Deserialize<UserData>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (userData == null || userData.Login == null)
+                return null;
+            else
+                return userData;
         }
     }
 }

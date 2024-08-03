@@ -23,6 +23,15 @@ namespace ChatApp.Client.Models
             CreatedAt = DateTime.Now;
         }
 
+        public Message(int userId, string userName, int chatId, string content)
+        {
+            UserId = userId;
+            User = new User(userName, "");
+            ChatId = chatId;
+            Content = content;
+            CreatedAt = DateTime.Now;
+        }
+
         public Message(int userId, int chatId, string content, DateTime dateTime)
         {
             UserId = userId;

@@ -12,7 +12,7 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
-        @if (chats != null && chats.Length > 0) 
+        @if (HttpContext.User.Identity!.IsAuthenticated && chats != null && chats.Length > 0)
         {
             <div class="nav-item px-3">
                 @foreach (ChatGroup chat in chats)
@@ -34,6 +34,9 @@
 </div>
 
 @code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
     private ChatGroup[] chats;
 
     protected override async Task OnInitializedAsync()

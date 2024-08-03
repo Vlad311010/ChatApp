@@ -29,7 +29,7 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions => {
     cookieOptions.ExpireTimeSpan = TimeSpan.FromMinutes(20);
-    cookieOptions.LoginPath = "/Forbidden";
+    cookieOptions.LoginPath = "/Login";
     cookieOptions.AccessDeniedPath = "/Forbidden";
 
 

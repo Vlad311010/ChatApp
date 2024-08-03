@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using ChatApp.Client;
 using ChatApp.Client.Services;
+using ChatApp.Client.Models;
+using System;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -21,7 +23,23 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<ApiAccess>();
 
 
+WebAssemblyHost host = builder.Build();
 
+/*var logger = host.Services.GetRequiredService<ILoggerFactory>()
+    .CreateLogger<Program>();*/
 
+// restore active authentication state;
+using (var scope = host.Services.CreateScope())
+{
+    var service = scope.ServiceProvider;
+    ApiAccess apiAccessor = service.GetService<ApiAccess>()!;
+    CustomAuthenticationStateProvider authenticationStateProvider = service.GetService<CustomAuthenticationStateProvider>()!;
 
-await builder.Build().RunAsync();
+    UserData? userData = await apiAccessor.AuthenticationRefreshAsync();
+    if (userData == null)
+        authenticationStateProvider.SignOut();
+    else
+        authenticationStateProvider.LoginUser(userData);
+}
+
+await host.RunAsync();
