@@ -7,23 +7,16 @@
 @inject NavigationManager Navigation
 @inject ApiAccess MessagesService
 @inject CustomAuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JS
 @implements IAsyncDisposable
 
 @attribute [Authorize]
 
 <PageTitle>Chat</PageTitle>
-<div class="form-group">
-    <label>
-        Message:
-        <input @bind="messageInput" size="50" />
-    </label>
-</div>
-<button @onclick="Send" disabled="@(!IsConnected)">Send</button>
 
-<hr>
-
-@if (chatMessages != null) {
-<div class="chat-window" id="messagesList">
+@if (chatMessages != null) 
+{
+<div class="chat-window" id="chat-window" @ref=chatWindow>
     @foreach (var message in chatMessages)
     {
         if (currentUserId == message.UserId)
@@ -38,10 +31,29 @@
 </div>
 }
 
+<hr>
+
+<div class="chat-input-container">
+    <input @bind="messageInput" type="text" id="chatInput" class="chat-input" placeholder="Type your message...">
+    <button @onclick="Send" class="send-btn" disabled="@(!IsConnected)">Send</button>
+</div>
+<button @onclick="ScrollToBottom" class="send-btn" disabled="@(!IsConnected)">BOT</button>
+
+
+<script>
+    window.onload = function () {
+        console.log("SCroll");
+        ScrollToBottom(document.getElementById("chat-window"));
+    };
+</script>
+
+
 
 @code {
     [Parameter]
     public string ChatName { get; set; } = string.Empty;
+
+    private ElementReference chatWindow;
 
     private HubConnection? hubConnection;
     private List<Message> chatMessages = default!;
@@ -50,6 +62,17 @@
     private string currentUserName = "";
     private string? messageInput;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            await ScrollToBottom();
+    }
+
+
+    private async Task ScrollToBottom()
+    {
+        await JS.InvokeVoidAsync("ScrollToBottom", chatWindow);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,12 +88,12 @@
 
         hubConnection.On<string>("GroupConnect", (message) =>
         {
-            Console.WriteLine(message);
+            // Console.WriteLine(message);
         });
 
         hubConnection.On<string>("GroupDisconnect", (message) =>
         {
-            Console.WriteLine(message);
+            // Console.WriteLine(message);
         });
 
         await hubConnection.StartAsync();

@@ -2,11 +2,11 @@
 
 
 
-<div class="container mt-3 chat-message">
-    <div class="@(type) mb-3 p-3 border rounded chat-container right-side">
+<div class="container mt-3 chat-message @(sidingStyle)">
+    <div class="@(type) mb-3 p-3 border rounded chat-container">
         <div class="d-flex justify-content-between @(type == "sent" ? "inversed" : "")">
             <div class="sender-name fw-bold">@(type == "sent" ? "You" : messageModel.User.Login)</div>
-            <div class="timestamp text-muted">@messageModel.CreatedAt.TimeOfDay.ToString("hh\\:mm") @messageModel.CreatedAt.Date.ToString("MM-dd-yyyy")</div>
+            <div class="timestamp text-muted">@timeString</div>
         </div>
         <div class="message-content mt-2">
             @messageModel.Content
@@ -22,4 +22,20 @@
 
     [Parameter, EditorRequired]
     public Message messageModel { get; set; } = default!;
+
+    [Parameter]
+    public bool timeWithDate { get; set; } = false;
+
+    private string sidingStyle = "";
+    private string timeString = "";
+
+    protected override void OnInitialized()
+    {
+        if (type == "sent")
+            sidingStyle = "stick-right";
+        else if (type == "received")
+            sidingStyle = "stick-left";
+
+        timeString = messageModel.CreatedAt.TimeOfDay.ToString("hh\\:mm") + (timeWithDate ? messageModel.CreatedAt.Date.ToString("MM-dd-yyyy") : "");
+    }
 }
