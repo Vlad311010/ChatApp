@@ -4,6 +4,7 @@ using ChatApp.Client;
 using ChatApp.Client.Services;
 using ChatApp.Client.Models;
 using System;
+using ChatApp.Client.ApiUtils;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

@@ -5,6 +5,10 @@
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">ChatApp</a>
+        @if (HttpContext.User.Identity!.IsAuthenticated) 
+        {
+            <a class="navbar-brand">@HttpContext.User.Identity.Name</a>
+        }
     </div>
 </div>
 
@@ -17,8 +21,9 @@
             <div class="nav-item px-3">
                 @foreach (ChatGroup chat in chats)
                 {
+
                     <NavLink class="nav-link" href="@("chat/" + chat.Name)">
-                        @chat.Name
+                        @(chat.Name + " " + chat.Memebers?.Count())
                     </NavLink>
                 }
             </div>

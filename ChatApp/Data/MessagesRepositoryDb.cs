@@ -30,6 +30,14 @@ namespace ChatApp.Data
 
         public async Task SendMessage(int userId, int chatId, string content)
         {
+            /*ChatGroup chatGroup = await dbContext.ChatGroups.Where(c => c.Id == chatId).Include(c => c.Participants).SingleAsync();
+            
+            if (!chatGroup.Participants.Any(p => p.Id == userId)) 
+            {
+                User user = await dbContext.Users.Where(u => u.Id == userId).SingleAsync();
+                chatGroup.Participants.Add(user);
+            }*/
+
             Message message = new Message(userId, chatId, content);
             await dbContext.Messages.AddAsync(message);
             await dbContext.SaveChangesAsync();
@@ -42,9 +50,7 @@ namespace ChatApp.Data
                 return;
 
             int chatId = chat.Id;
-            Message message = new Message(userId, chatId, content);
-            await dbContext.Messages.AddAsync(message);
-            await dbContext.SaveChangesAsync();
+            await SendMessage(userId, chatId, content);
         }
     }
 }

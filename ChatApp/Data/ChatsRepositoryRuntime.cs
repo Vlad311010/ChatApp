@@ -1,6 +1,7 @@
 ﻿using ChatApp.Client.Models;
 using ChatApp.Client.Pages;
 using ChatApp.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Data
 {
@@ -18,9 +19,25 @@ namespace ChatApp.Data
             return Task.FromResult<IEnumerable<ChatGroup>>(chatGroups);
         }
 
-        public Task<ChatGroup?> GetByName(string chatName)
+        public Task<ChatGroup?> GetByName(string chatName, bool includeMembers = false)
         {
             return Task.FromResult(chatGroups.Where(u => u.Name == chatName).SingleOrDefault());
         }
+
+        public Task AddUser(int userId, int chatId)
+        {
+            /*ChatGroup chatGroup = chatGroups.Where(c => c.Id == chatId).Single();
+            User user = new User(userId.ToString(), "");
+            user.Id = userId;
+            chatGroup.Participants.Add(user);
+            return Task.CompletedTask;*/
+            throw new NotImplementedException();
+        }
+
+        public Task AddUser(int userId, string chatName)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

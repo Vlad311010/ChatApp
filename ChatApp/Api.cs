@@ -4,14 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ChatApp.Interfaces;
 using System.ComponentModel.DataAnnotations;
-using ChatApp.Client;
 using ChatApp.Migrations;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity.Data;
+using ChatApp.Client.ApiUtils;
+using System.Linq;
 
 namespace ChatApp
 {
+
+    // TODO: Aunthentication, authorization
     public static class Api
     {
         public static RouteGroupBuilder MapEndpoints(this RouteGroupBuilder group)
@@ -19,7 +22,10 @@ namespace ChatApp
             group.MapPost("/logout", Logout).WithName("Logout");
             group.MapPost("/login", Login).WithName("Login");
             group.MapPost("/AutRefresh", AuthenticationRefresh).WithName("AuthenticationRefresh");
+
             group.MapGet("/chat/{chatName}/messages", GetChatMessages).WithName("GetChatMessages");
+            group.MapGet("/chat/{chatName}/isParticipant/{userName}", IsChatParticipant).WithName("IsChatParticipant");
+            group.MapPost("/chat/{chatName}/join", JoinChat).WithName("JoinChat");
 
             return group;
         }
@@ -96,6 +102,37 @@ namespace ChatApp
         {
             Message[] messages = (await messagesRepo.ChatMessages(chatName)).ToArray();
             return Results.Ok(messages);
+        }
+
+        private static async Task<IResult> IsChatParticipant(HttpContext httpContext, IUsersRepository usersRepo, IChatsRepository chatGroupsRepo,
+            [FromRoute] string chatName, [FromRoute] string userName)
+        {
+            // TODO: Make endpoint accessable only from owner/admin.
+
+            User? user = await usersRepo.GetByLogin(userName);
+            ChatGroup? chatGroup = await chatGroupsRepo.GetByName(chatName, true);
+
+
+            bool isChatParticipant = user != null && chatGroup != null && chatGroup.Memebers != null &&
+                chatGroup.Memebers.Any(cg => cg.Equals(new ChatGroupMembers(chatGroup, user)));
+            return Results.Ok(new BooleanResponce(isChatParticipant));
+        }
+
+        private static async Task<IResult> JoinChat(HttpContext httpContext, 
+            IUsersRepository usersRepo, IChatsRepository chatGroupsRepo,
+
+            [FromRoute] string chatName)
+        {
+            if (!httpContext.User.Identity!.IsAuthenticated)
+                return Results.Forbid();
+            
+
+            User? user = await usersRepo.GetByLogin(httpContext.User.Identity.Name!);
+            // ChatGroup? chatGroup = await chatGroupsRepo.GetByName(chatName);
+
+            await chatGroupsRepo.AddUser(user!.Id, chatName);
+
+            return Results.NoContent();
         }
 
     }

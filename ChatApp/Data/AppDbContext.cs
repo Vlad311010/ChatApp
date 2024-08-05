@@ -28,6 +28,19 @@ namespace ChatApp.Data
                 .Ignore(cg => cg.Owner);*/
 
             modelBuilder.Entity<Message>().HasIndex(x => x.CreatedAt).IsUnique(false);
+
+            modelBuilder.Entity<ChatGroupMembers>()
+                .HasKey(c => new { c.UserId, c.ChatGroupId });
+
+            /*modelBuilder.Entity<ChatGroupMembers>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId);*/
+
+            /*modelBuilder.Entity<ChatGroupMembers>()
+                .HasOne(cg => cg.ChatGroup)
+                .WithMany(c => c.Memebers)
+                .HasForeignKey(c => c.ChatGroupId);*/
         }
     }
 }

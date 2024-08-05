@@ -4,6 +4,7 @@ using System;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using ChatApp.Client.ApiUtils;
 
 namespace ChatApp.Client.Services
 {
@@ -55,5 +56,19 @@ namespace ChatApp.Client.Services
             else
                 return userData;
         }
+
+        public async Task<bool> IsChatParticipantAsync(string chatName, string userName)
+        {
+            BooleanResponce? response = await httpClient.GetFromJsonAsync<BooleanResponce>($"api/chat/{chatName}/IsParticipant/{userName}");
+            return response != null ? response.value : false;
+        }
+
+        public async Task JoinChat(string chatName)
+        {
+            var response = await httpClient.PostAsync($"api/chat/{chatName}/join", null);
+            response.EnsureSuccessStatusCode();
+        }
+
+        
     }
 }
