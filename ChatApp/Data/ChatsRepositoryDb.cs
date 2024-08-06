@@ -39,6 +39,16 @@ namespace ChatApp.Data
             }
         }
 
+        public async Task<IEnumerable<ChatGroup>> UserChats(string userName)
+        {
+            User? user = await dbContext.Users.Where(u => u.Login == userName).SingleOrDefaultAsync();
+            if (user == null)
+                return new List<ChatGroup>();
+
+            int[] userChats = dbContext.ChatGroupmembers.Where(m => m.UserId == user.Id).Select(m => m.ChatGroupId).ToArray();
+            return dbContext.ChatGroups.Where(c => userChats.Contains(c.Id));
+        }
+
         public async Task AddUser(int userId, string chatName)
         {
             ChatGroup chatGroup = await dbContext.ChatGroups.Where(c => c.Name == chatName).Include(c => c.Memebers).SingleAsync();
@@ -77,5 +87,6 @@ namespace ChatApp.Data
             dbContext.ChatGroups.Add(chatGroup);
             await dbContext.SaveChangesAsync();
         }
+
     }
 }

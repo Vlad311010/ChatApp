@@ -1,0 +1,119 @@
+﻿@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using ChatApp.Client.Models
+@using ChatApp.Client.Services
+@using ChatApp.Client.Components
+@inject ApiAccess Api
+@inject CustomAuthenticationStateProvider AuthenticationStateProvider
+@implements IDisposable
+
+<script>
+    document.onload = function () {
+        const chats = document.getElementById("nav-chats-tab");
+        const browse = document.getElementById("nav-browse-tab");
+
+        browse.onclick = function () {
+            browse.classList.add("active");
+
+            browse.classList.remove("text-white");
+            chats.classList.remove("text-white");
+        };
+
+        chats.onclick = function () {
+            chats.classList.add("active");
+
+            chats.classList.remove("text-white");
+            browse.classList.remove("text-white");
+        };
+    }
+    
+</script>
+
+
+<!--
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">ChatApp</a>
+        @if (HttpContext.User.Identity!.IsAuthenticated) 
+        {
+            <a class="navbar-brand">@HttpContext.User.Identity.Name</a>
+        }
+    </div>
+</div>
+-->
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button class="w-50 nav-link active" id="nav-chats-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">My Chats</button>
+            <button @onclick=BrowseTabClick class="w-50 nav-link text-white" id="nav-browse-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Browse</button>
+        </div>
+    </nav>
+
+    <nav class="flex-column">
+        <SpinnerComponent IsLoading="@isLoading">
+            @if (chats != null && chats.Length > 0)
+            {
+                <div class="nav-item px-3">
+                    @foreach (ChatGroup chat in chats)
+                    {
+
+                        <NavLink class="nav-link" href="@("chat/" + chat.Name)">
+                            @(chat.Name + " " + chat.Memebers?.Count())
+                        </NavLink>
+                    }
+                </div>
+            }
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="chat/create">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> New Chat Group
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="home">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                </NavLink>
+            </div>
+
+        </SpinnerComponent>
+    </nav>
+</div>
+
+@code {
+
+    private ChatGroup[] chats;
+
+    private bool isLoading = false;
+
+    private async void UpdateAuthenticationState(Task<AuthenticationState> task)
+    {
+        if ((await task).User.Identity!.IsAuthenticated) 
+        {
+            isLoading = true;
+            chats = await Api.MyChats().ContinueWith((res) => { isLoading = false; return res.Result; });
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged += UpdateAuthenticationState;
+        UpdateAuthenticationState(AuthenticationStateProvider.GetAuthenticationStateAsync());
+    }
+
+    public void Dispose()
+    {
+        AuthenticationStateProvider.AuthenticationStateChanged -= UpdateAuthenticationState;
+    }
+
+
+
+    private void BrowseTabClick()
+    {
+    }
+}
+

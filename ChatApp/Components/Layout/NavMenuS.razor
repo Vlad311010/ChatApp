@@ -2,6 +2,28 @@
 @using ChatApp.Data
 @inject IChatsRepository Chats
 
+<script>
+    document.onload = function () {
+        const chats = document.getElementById("nav-chats-tab");
+        const browse = document.getElementById("nav-browse-tab");
+
+        browse.onclick = function () {
+            browse.classList.add("active");
+
+            browse.classList.remove("text-white");
+            chats.classList.remove("text-white");
+        };
+
+        chats.onclick = function () {
+            chats.classList.add("active");
+
+            chats.classList.remove("text-white");
+            browse.classList.remove("text-white");
+        };
+    }
+    
+</script>
+
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">ChatApp</a>
@@ -15,6 +37,14 @@
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+
+    <nav>
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button class="w-50 nav-link active" id="nav-chats-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">My Chats</button>
+            <button @onclick=BrowseTabClick class="w-50 nav-link text-white" id="nav-browse-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Browse</button>
+        </div>
+    </nav>
+
     <nav class="flex-column">
         @if (HttpContext.User.Identity!.IsAuthenticated && chats != null && chats.Length > 0)
         {
@@ -41,6 +71,7 @@
             </NavLink>
         </div>
 
+
     </nav>
 </div>
 
@@ -53,6 +84,10 @@
     protected override async Task OnInitializedAsync()
     {
         chats = (await Chats.All()).ToArray();
+    }
+
+    private void BrowseTabClick()
+    {
     }
 }
 

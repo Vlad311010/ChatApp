@@ -69,6 +69,18 @@ namespace ChatApp.Client.Services
             response.EnsureSuccessStatusCode();
         }
 
-        
+        public async Task<ChatGroup[]> MyChats()
+        {
+            // return Array.Empty<ChatGroup>();
+            ChatGroup[]? chats = await httpClient.GetFromJsonAsync<ChatGroup[]>(string.Format("api/chats/my"));
+
+            if (chats == null)
+                return Array.Empty<ChatGroup>();
+            
+            return chats;
+            return Array.Empty<ChatGroup>();
+        }
+
+
     }
 }

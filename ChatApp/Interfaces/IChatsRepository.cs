@@ -10,5 +10,6 @@ namespace ChatApp.Interfaces
         Task AddUser(int userId, int chatId);
         Task AddUser(int userId, string chatName);
         Task CreateChat(ChatGroupView chatGroup);
+        Task<IEnumerable<ChatGroup>> UserChats(string userName);
     }
 }

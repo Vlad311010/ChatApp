@@ -28,6 +28,8 @@ namespace ChatApp
             group.MapPost("/chat/{chatName}/join", JoinChat).WithName("JoinChat");
             // group.MapGet("/chat/checkName/{chatName}", IsChatNameClaimed).WithName("IsChatNameClaimed");
 
+            group.MapGet("/chats/my", MyChats).WithName("MyChats");
+
             return group;
         }
 
@@ -59,7 +61,7 @@ namespace ChatApp
 
             await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
             user.Password = "";
-            return Results.Ok(user);   
+            return Results.Ok(user);
         }
 
         private static async Task Logout(HttpContext httpContext)
@@ -119,12 +121,12 @@ namespace ChatApp
             return Results.Ok(new BooleanResponce(isChatParticipant));
         }
 
-        private static async Task<IResult> JoinChat(HttpContext httpContext,  IUsersRepository usersRepo, IChatsRepository chatGroupsRepo, 
+        private static async Task<IResult> JoinChat(HttpContext httpContext, IUsersRepository usersRepo, IChatsRepository chatGroupsRepo,
             [FromRoute] string chatName)
         {
             if (!httpContext.User.Identity!.IsAuthenticated)
                 return Results.Forbid();
-            
+
 
             User? user = await usersRepo.GetByLogin(httpContext.User.Identity.Name!);
             // ChatGroup? chatGroup = await chatGroupsRepo.GetByName(chatName);
@@ -140,6 +142,17 @@ namespace ChatApp
                     ? Results.Ok(new BooleanResponce(false))
                     : Results.Ok(new BooleanResponce(true));
         }*/
+
+        public static async Task<IResult> MyChats(HttpContext httpContext, IChatsRepository chatGroupsRepo)
+        {
+            if (!httpContext.User.Identity!.IsAuthenticated)
+                return Results.Forbid();
+
+            string userName = httpContext.User.Identity.Name!;
+            ChatGroup[] chats = (await chatGroupsRepo.UserChats(userName)).ToArray();
+
+            return Results.Ok(chats);
+        }
 
     }
 }
