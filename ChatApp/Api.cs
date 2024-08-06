@@ -26,6 +26,8 @@ namespace ChatApp
             group.MapGet("/chat/{chatName}/messages", GetChatMessages).WithName("GetChatMessages");
             group.MapGet("/chat/{chatName}/isParticipant/{userName}", IsChatParticipant).WithName("IsChatParticipant");
             group.MapPost("/chat/{chatName}/join", JoinChat).WithName("JoinChat");
+            group.MapPost("/chat/{chatName}/leave", LeaveChat).WithName("LeaveChat");
+            group.MapPost("/chat/{chatName}/invite/{userName}", InviteToChat).WithName("InviteUser");
             // group.MapGet("/chat/checkName/{chatName}", IsChatNameClaimed).WithName("IsChatNameClaimed");
 
             group.MapGet("/chats/my", MyChats).WithName("MyChats");
@@ -118,7 +120,7 @@ namespace ChatApp
 
 
             bool isChatParticipant = user != null && chatGroup != null && chatGroup.Memebers != null &&
-                chatGroup.Memebers.Any(cg => cg.Equals(new ChatGroupMembers(chatGroup, user)));
+                chatGroup.Memebers.Contains(new ChatGroupMembers(chatGroup, user));
             return Results.Ok(new BooleanResponce(isChatParticipant));
         }
 
@@ -128,12 +130,32 @@ namespace ChatApp
             if (!httpContext.User.Identity!.IsAuthenticated)
                 return Results.Forbid();
 
-
-            User? user = await usersRepo.GetByLogin(httpContext.User.Identity.Name!);
-            // ChatGroup? chatGroup = await chatGroupsRepo.GetByName(chatName);
-
+            User? user = await usersRepo.GetByLogin(httpContext.User.Identity.Name!);         
             await chatGroupsRepo.AddUser(user!.Id, chatName);
 
+            return Results.NoContent();
+        }
+
+        private static async Task<IResult> LeaveChat(HttpContext httpContext, IUsersRepository usersRepo, IChatsRepository chatGroupsRepo,
+            [FromRoute] string chatName)
+        {
+            if (!httpContext.User.Identity!.IsAuthenticated)
+                return Results.Forbid();
+
+            User? user = await usersRepo.GetByLogin(httpContext.User.Identity.Name!);
+            await chatGroupsRepo.RemoveUser(user!.Id, chatName);
+
+            return Results.NoContent();
+        }
+
+        private static async Task<IResult> InviteToChat(HttpContext httpContext, IUsersRepository usersRepo, IChatsRepository chatGroupsRepo,
+            [FromRoute] string chatName, [FromRoute] string userName)
+        {
+            User? userToInvite = await usersRepo.GetByLogin(userName);
+            if (userToInvite == null)
+                return Results.NotFound($"User {userName} not found");
+
+            await chatGroupsRepo.AddUser(userToInvite.Id, chatName);
             return Results.NoContent();
         }
 

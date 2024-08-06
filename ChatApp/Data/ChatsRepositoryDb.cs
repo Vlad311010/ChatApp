@@ -29,9 +29,9 @@ namespace ChatApp.Data
                 return await dbContext.ChatGroups.Where(c => c.Name == chatName).SingleOrDefaultAsync();
         }
 
-        public async Task AddUser(int userId, int chatId)
+        public async Task AddUser(int userId, string chatName)
         {
-            ChatGroup chatGroup = await dbContext.ChatGroups.Where(c => c.Id == chatId).Include(c => c.Memebers).SingleAsync();
+            ChatGroup chatGroup = await dbContext.ChatGroups.Where(c => c.Name == chatName).Include(c => c.Memebers).SingleAsync();
             User user = await dbContext.Users.Where(u => u.Id == userId).SingleAsync();
 
             ChatGroupMembers chatGroupMembers = new ChatGroupMembers(chatGroup, user);
@@ -40,6 +40,17 @@ namespace ChatApp.Data
                 chatGroup.Memebers.Add(chatGroupMembers);
                 await dbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task RemoveUser(int userId, string chatName)
+        {
+            ChatGroup chatGroup = await dbContext.ChatGroups.Where(c => c.Name == chatName).Include(c => c.Memebers).SingleAsync();
+            User user = await dbContext.Users.Where(u => u.Id == userId).SingleAsync();
+
+            ChatGroupMembers chatGroupMembers = new ChatGroupMembers(chatGroup, user);
+
+            chatGroup.Memebers.Remove(chatGroupMembers);
+            dbContext.SaveChanges();
         }
 
         public async Task<IEnumerable<ChatGroup>> UserChats(string userName)
@@ -52,28 +63,7 @@ namespace ChatApp.Data
             return dbContext.ChatGroups.Where(c => userChats.Contains(c.Id));
         }
 
-        public async Task AddUser(int userId, string chatName)
-        {
-            ChatGroup chatGroup = await dbContext.ChatGroups.Where(c => c.Name == chatName).Include(c => c.Memebers).SingleAsync();
-            User user = await dbContext.Users.Where(u => u.Id == userId).SingleAsync();
 
-            /*Console.WriteLine((await dbContext.ChatGroups.Where(c => c.Name == "Test01").Include(c => c.Participants).SingleAsync()).Participants.Count());
-            Console.WriteLine((await dbContext.ChatGroups.Where(c => c.Name == "Test02").Include(c => c.Participants).SingleAsync()).Participants.Count());
-            Console.WriteLine((await dbContext.ChatGroups.Where(c => c.Name == "Test03").Include(c => c.Participants).SingleAsync()).Participants.Count());*/
-            if (chatGroup.Memebers == null)
-            {
-                chatGroup.Memebers = new List<ChatGroupMembers>();
-            }
-
-            ChatGroupMembers chatGroupMembers = new ChatGroupMembers(chatGroup, user);
-            if (!chatGroup.Memebers.Contains(chatGroupMembers))
-            {
-                chatGroup.Memebers.Add(chatGroupMembers);
-                await dbContext.SaveChangesAsync();
-            }
-        }
-
-        
         public async Task CreateChat(ChatGroupView viewModel)
         {
 

@@ -2,12 +2,21 @@
 {
     public class ClientSideEvents
     {
-        public event Action? onChatJoin;
-        public void UserHasJoinedChat()
+        public event Action<string>? onChatGroupJoin;
+        public void ChatGroupJoin(string chatName)
         {
-            if (onChatJoin != null)
+            if (onChatGroupJoin != null)
             {
-                onChatJoin();
+                onChatGroupJoin(chatName);
+            }
+        }
+
+        public event Action<string>? onChatGroupLeave;
+        public void ChatGroupLeave(string chatName)
+        {
+            if (onChatGroupLeave != null)
+            {
+                onChatGroupLeave(chatName);
             }
         }
     }

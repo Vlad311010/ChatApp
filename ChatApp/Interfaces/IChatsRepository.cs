@@ -7,8 +7,8 @@ namespace ChatApp.Interfaces
     {
         Task<IEnumerable<ChatGroup>> All(bool includePrivate = true);
         Task<ChatGroup?> GetByName(string chatName, bool includeMembers = false);
-        Task AddUser(int userId, int chatId);
         Task AddUser(int userId, string chatName);
+        Task RemoveUser(int userId, string chatName);
         Task CreateChat(ChatGroupView chatGroup);
         Task<IEnumerable<ChatGroup>> UserChats(string userName);
     }

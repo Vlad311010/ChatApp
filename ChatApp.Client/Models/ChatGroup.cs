@@ -15,8 +15,7 @@ namespace ChatApp.Client.Models
         public string? Description { get; set; }
         public bool IsPublic { get; set; } = false;
         public int OwnerId { get; set; }
-
-        public virtual ICollection<ChatGroupMembers> Memebers { get; set; }
+        public virtual ChatGroupMembersCollection Memebers { get; set; }
 
         public ChatGroup() { }
 

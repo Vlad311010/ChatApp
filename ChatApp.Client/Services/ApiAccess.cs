@@ -11,15 +11,18 @@ namespace ChatApp.Client.Services
     public class ApiAccess
     {
         private readonly HttpClient httpClient;
+        private readonly ClientSideEvents events;
 
-        public ApiAccess(HttpClient httpClient)
+
+        public ApiAccess(HttpClient httpClient, ClientSideEvents events)
         {
             this.httpClient = httpClient;
+            this.events = events;
         }
 
-        public async Task<List<Message>> GetMessagesAsync(string ChatName)
+        public async Task<List<Message>> GetMessagesAsync(string chatName)
         {
-            List<Message>? messages = await httpClient.GetFromJsonAsync<List<Message>>(string.Format("api/chat/{0}/messages", ChatName));
+            List<Message>? messages = await httpClient.GetFromJsonAsync<List<Message>>($"api/chat/{chatName}/messages");
             return messages == null ? new List<Message>() : messages;
         }
 
@@ -67,11 +70,19 @@ namespace ChatApp.Client.Services
         {
             var response = await httpClient.PostAsync($"api/chat/{chatName}/join", null);
             response.EnsureSuccessStatusCode();
+            events.ChatGroupJoin(chatName);
+        }
+
+        public async Task LeaveChat(string chatName)
+        {
+            var response = await httpClient.PostAsync($"api/chat/{chatName}/leave", null);
+            response.EnsureSuccessStatusCode();
+            events.ChatGroupLeave(chatName);
         }
 
         public async Task<ChatGroup[]> MyChats()
         {
-            ChatGroup[]? chats = await httpClient.GetFromJsonAsync<ChatGroup[]>(string.Format("api/chats/my"));
+            ChatGroup[]? chats = await httpClient.GetFromJsonAsync<ChatGroup[]>("api/chats/my");
 
             if (chats == null)
                 return Array.Empty<ChatGroup>();
@@ -79,9 +90,15 @@ namespace ChatApp.Client.Services
             return chats;
         }
 
+        public async Task InviteToChat(string chatName, string userName)
+        {
+            HttpResponseMessage responce = await httpClient.PostAsync($"api/chat/{chatName}/invite/{userName}", null!);
+            responce.EnsureSuccessStatusCode();
+        }
+
         public async Task<ChatGroup[]> PublicChats()
         {
-            ChatGroup[]? chats = await httpClient.GetFromJsonAsync<ChatGroup[]>(string.Format("api/chats/public"));
+            ChatGroup[]? chats = await httpClient.GetFromJsonAsync<ChatGroup[]>("api/chats/public");
 
             if (chats == null)
                 return Array.Empty<ChatGroup>();

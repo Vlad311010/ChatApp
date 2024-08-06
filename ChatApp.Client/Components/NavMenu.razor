@@ -39,10 +39,12 @@
                     <div class="nav-item px-3">
                         @foreach (ChatGroup chat in userChats)
                         {
-
-                            <NavLink class="nav-link" href="@("chat/" + chat.Name)">
-                                @(chat.Name)
-                            </NavLink>
+                            <div class="w-100 d-flex justify-content-between">
+                                <NavLink class="nav-link" href="@("chat/" + chat.Name)">
+                                    <span>@(chat.Name) </span>
+                                </NavLink>
+                                <span @onclick='async () => { await Api.LeaveChat(chat.Name); }' type="button" class="h-50 m-2 btn btn-danger btn-sm">❌</span>
+                            </div>
                         }
                     </div>
                 }
@@ -104,16 +106,18 @@
     {
         AuthenticationStateProvider.AuthenticationStateChanged += UpdateAuthenticationState;
         UpdateNavMenu();
-        Events.onChatJoin += UpdateNavMenu;
+        Events.onChatGroupJoin += UpdateNavMenu;
+        Events.onChatGroupLeave += UpdateNavMenu;
     }
 
     public void Dispose()
     {
         AuthenticationStateProvider.AuthenticationStateChanged -= UpdateAuthenticationState;
-        Events.onChatJoin -= UpdateNavMenu;
+        Events.onChatGroupJoin -= UpdateNavMenu;
+        Events.onChatGroupLeave -= UpdateNavMenu;
     }
 
-    private void UpdateNavMenu()
+    private void UpdateNavMenu(string _ = "")
     {
         UpdateAuthenticationState(AuthenticationStateProvider.GetAuthenticationStateAsync());
     }

@@ -34,6 +34,15 @@ namespace ChatApp.Data
             modelBuilder.Entity<ChatGroupMembers>()
                 .HasKey(c => new { c.UserId, c.ChatGroupId });
 
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Login)
+                .IsUnique();
+
+            modelBuilder.Entity<ChatGroup>()
+                .HasIndex(cg => cg.Name)
+                .IsUnique();
+
+
             /*modelBuilder.Entity<ChatGroupMembers>()
                 .HasOne(c => c.User)
                 .WithMany()
@@ -43,6 +52,8 @@ namespace ChatApp.Data
                 .HasOne(cg => cg.ChatGroup)
                 .WithMany(c => c.Memebers)
                 .HasForeignKey(c => c.ChatGroupId);*/
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
