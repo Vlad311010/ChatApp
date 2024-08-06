@@ -29,6 +29,7 @@ namespace ChatApp
             // group.MapGet("/chat/checkName/{chatName}", IsChatNameClaimed).WithName("IsChatNameClaimed");
 
             group.MapGet("/chats/my", MyChats).WithName("MyChats");
+            group.MapGet("/chats/public", PublicChats).WithName("PublicChats");
 
             return group;
         }
@@ -151,6 +152,12 @@ namespace ChatApp
             string userName = httpContext.User.Identity.Name!;
             ChatGroup[] chats = (await chatGroupsRepo.UserChats(userName)).ToArray();
 
+            return Results.Ok(chats);
+        }
+
+        public static async Task<IResult> PublicChats(HttpContext httpContext, IChatsRepository chatGroupsRepo)
+        {
+            ChatGroup[] chats = (await chatGroupsRepo.All(false)).ToArray();
             return Results.Ok(chats);
         }
 

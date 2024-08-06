@@ -22,6 +22,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddScoped<ApiAccess>();
+builder.Services.AddSingleton<ClientSideEvents>();
 
 
 WebAssemblyHost host = builder.Build();

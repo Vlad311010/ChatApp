@@ -13,9 +13,12 @@ namespace ChatApp.Data
             this.dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<ChatGroup>> All()
+        public async Task<IEnumerable<ChatGroup>> All(bool includePrivate = true)
         {
-            return await dbContext.ChatGroups.ToListAsync();
+            if (includePrivate)
+                return await dbContext.ChatGroups.ToListAsync();
+            else 
+                return await dbContext.ChatGroups.Where(cg => cg.IsPublic).ToListAsync();
         }
 
         public async Task<ChatGroup?> GetByName(string chatName, bool includeMembers = false)
