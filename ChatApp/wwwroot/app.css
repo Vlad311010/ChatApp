@@ -135,6 +135,16 @@ html {
     overflow-x: hidden;
 }
 
+.word-trim {
+    overflow: hidden;
+    white-space: nowrap; 
+    text-overflow: ellipsis;
+}
+
+.word-trim .nav-link {
+    max-width: 45%;
+}
+
 .chat-window {
     overflow-y: auto; /* Enable vertical scrolling */
     overflow-x: clip; /* Hide horizontal overflow */

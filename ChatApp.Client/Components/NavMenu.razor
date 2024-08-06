@@ -25,8 +25,18 @@
 
     <nav>
         <div class="nav nav-tabs" id="nav-tab" role="tablist">
-            <button @onclick="ChatsTabClick" class="w-50 nav-link @(browseTabSelected ? "text-white" : "active")" id="nav-chats-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">My Chats</button>
-            <button @onclick="BrowseTabClick" class="w-50 nav-link @(!browseTabSelected ? "text-white" : "active")" id="nav-browse-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Browse</button>
+            <button @onclick="ChatsTabClick" class="w-50 nav-link @(browseTabSelected ? "text-white" : "active")" id="nav-chats-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-fill" viewBox="0 0 16 16">
+                    <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2" />
+                </svg>
+                Chats
+            </button>
+            <button @onclick="BrowseTabClick" class="w-50 nav-link @(!browseTabSelected ? "text-white" : "active")" id="nav-browse-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-globe2" viewBox="0 0 16 16">
+                    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855q-.215.403-.395.872c.705.157 1.472.257 2.282.287zM4.249 3.539q.214-.577.481-1.078a7 7 0 0 1 .597-.933A7 7 0 0 0 3.051 3.05q.544.277 1.198.49zM3.509 7.5c.036-1.07.188-2.087.436-3.008a9 9 0 0 1-1.565-.667A6.96 6.96 0 0 0 1.018 7.5zm1.4-2.741a12.3 12.3 0 0 0-.4 2.741H7.5V5.091c-.91-.03-1.783-.145-2.591-.332M8.5 5.09V7.5h2.99a12.3 12.3 0 0 0-.399-2.741c-.808.187-1.681.301-2.591.332zM4.51 8.5c.035.987.176 1.914.399 2.741A13.6 13.6 0 0 1 7.5 10.91V8.5zm3.99 0v2.409c.91.03 1.783.145 2.591.332.223-.827.364-1.754.4-2.741zm-3.282 3.696q.18.469.395.872c.552 1.035 1.218 1.65 1.887 1.855V11.91c-.81.03-1.577.13-2.282.287zm.11 2.276a7 7 0 0 1-.598-.933 9 9 0 0 1-.481-1.079 8.4 8.4 0 0 0-1.198.49 7 7 0 0 0 2.276 1.522zm-1.383-2.964A13.4 13.4 0 0 1 3.508 8.5h-2.49a6.96 6.96 0 0 0 1.362 3.675c.47-.258.995-.482 1.565-.667m6.728 2.964a7 7 0 0 0 2.275-1.521 8.4 8.4 0 0 0-1.197-.49 9 9 0 0 1-.481 1.078 7 7 0 0 1-.597.933M8.5 11.909v3.014c.67-.204 1.335-.82 1.887-1.855q.216-.403.395-.872A12.6 12.6 0 0 0 8.5 11.91zm3.555-.401c.57.185 1.095.409 1.565.667A6.96 6.96 0 0 0 14.982 8.5h-2.49a13.4 13.4 0 0 1-.437 3.008M14.982 7.5a6.96 6.96 0 0 0-1.362-3.675c-.47.258-.995.482-1.565.667.248.92.4 1.938.437 3.008zM11.27 2.461q.266.502.482 1.078a8.4 8.4 0 0 0 1.196-.49 7 7 0 0 0-2.275-1.52c.218.283.418.597.597.932m-.488 1.343a8 8 0 0 0-.395-.872C9.835 1.897 9.17 1.282 8.5 1.077V4.09c.81-.03 1.577-.13 2.282-.287z" />
+                </svg>
+                Browse
+            </button>
         </div>
     </nav>
 
@@ -39,11 +49,26 @@
                     <div class="nav-item px-3">
                         @foreach (ChatGroup chat in userChats)
                         {
-                            <div class="w-100 d-flex justify-content-between">
-                                <NavLink class="nav-link" href="@("chat/" + chat.Name)">
-                                    <span>@(chat.Name) </span>
+                            <div class="w-100 d-flex justify-content-between word-trim">
+                                <NavLink class="nav-link word-trim" href="@("chat/" + chat.Name)">
+                                    <span>@(DisplayChatName(chat.Name, 12)) </span>
                                 </NavLink>
-                                <span @onclick='async () => { await Api.LeaveChat(chat.Name); }' type="button" class="h-50 m-2 btn btn-danger btn-sm">❌</span>
+                                <div class="d-flex">
+                                    @if (chat.OwnerId == userId)
+                                    {
+                                        <a href="@("chat/" + chat.Name + "/invite")" type="button" class="mt-3 mb-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="green" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
+                                                <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                                                <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5" />
+                                            </svg>
+                                        </a>
+                                    }
+                                    <span @onclick='async () => { await Api.LeaveChat(chat.Name); }' type="button" class="mt-3 mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="red" class="bi bi-x-square-fill" viewBox="0 0 16 16">
+                                            <path  d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm3.354 4.646L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708"></path>
+                                        </svg>
+                                    </span>
+                                </div>
                             </div>
                         }
                     </div>
@@ -51,13 +76,26 @@
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="chat/create">
-                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> New Chat Group
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3z" />
+                        </svg>
+                        New Chat Group
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="home">
                         <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="refresh">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                            <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
+                            <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+                        </svg>
+                        Refresh
                     </NavLink>
                 </div>
 
@@ -68,12 +106,15 @@
             @if (publicChats != null && publicChats.Length > 0)
             {
                 <div class="nav-item px-3">
-                    @foreach (ChatGroup chat in publicChats)
-                    {
-                        <NavLink class="nav-link" href="@("chat/" + chat.Name)">
-                            @(chat.Name)
-                        </NavLink>
-                    }
+                    
+                        @foreach (ChatGroup chat in publicChats)
+                        {
+                            <div class="w-100 d-flex justify-content-between word-trim">
+                                <NavLink class="nav-link word-trim" href="@("chat/" + chat.Name)">
+                                    @(chat.Name)
+                                </NavLink>
+                            </div>
+                        }
                 </div>
             }
         }
@@ -87,6 +128,7 @@
     private bool isLoading = false;
     private bool browseTabSelected = false;
     private string userName = "";
+    private int userId = -1;
 
     private async void UpdateAuthenticationState(Task<AuthenticationState> task)
     {
@@ -96,6 +138,7 @@
         if (state.User.Identity!.IsAuthenticated)
         {
             userName = state.User.Identity!.Name!;
+            Int32.TryParse(state.User.FindFirst("UserId")!.Value, out userId);
             isLoading = true;
             userChats = await Api.MyChats().ContinueWith((res) => { isLoading = false; return res.Result; });
         }
@@ -131,6 +174,13 @@
     private void BrowseTabClick()
     {
         browseTabSelected = true;
+    }
+
+    private string DisplayChatName(string fullName, int maxLength)
+    {
+        return fullName;
+        // if ()
+        return fullName.Substring(0, Math.Min(maxLength, fullName.Length));
     }
 
 }

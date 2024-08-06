@@ -1,0 +1,53 @@
+﻿@page "/chat/{chatName}/invite"
+@using ChatApp.Client.ApiUtils
+@using ChatApp.Client.Models
+@inject IChatsRepository ChatsRepo
+@inject IUsersRepository UsersRepo
+
+<h3>InviteToChat</h3>
+
+<div class="row">
+    <div class="col-md-5">
+        <section>
+            <EditForm Model="UserName" method="post" OnValidSubmit="InviteUser" FormName="loginForm">
+                <h2>Use a local account to log in.</h2>
+                <hr />
+                <ValidationSummary class="text-danger" role="alert" />
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="UserName" class="form-control" autocomplete="false" aria-required="true" placeholder="namexample" />
+                    <label for="email" class="form-label">Login</label>
+                    <ValidationMessage For="() => UserName" class="text-danger" />
+                </div>
+                <div class="text-danger text-center py-3">@errorMessage</div>
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                </div>
+
+            </EditForm>
+        </section>
+    </div>
+</div>
+
+    
+@code {
+    // TODO: Access to page by ownerOnly politic
+    [Parameter]
+    public string chatName { get; set; }
+
+    [SupplyParameterFromForm]
+    private string UserName { get; set; } = "";
+
+    private string? errorMessage;
+
+    private async Task InviteUser()
+    {
+        User? userToInvite = await UsersRepo.GetByLogin(UserName);
+        if (userToInvite == null) 
+        {
+            errorMessage = $"User '{UserName}' not found";
+            return;
+        }
+
+        await ChatsRepo.AddUser(userToInvite.Id, chatName);
+    }
+}
