@@ -11,7 +11,7 @@ namespace ChatApp.Client.Models
         public ChatGroup Chat { get; set; } = default!;
         public DateTime CreatedAt { get; set; } = default!;
         
-        [Column(TypeName = "VARCHAR(255)")]
+        [Column(TypeName = "VARCHAR(1000)")]
         public string Content { get; set; } = string.Empty;
 
         public Message() { }

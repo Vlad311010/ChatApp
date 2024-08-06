@@ -74,6 +74,7 @@ else {
         var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         isAuthented = state.User.Identity!.IsAuthenticated;
         userName = state.User.Identity.Name!;
+        
     }
 
 

@@ -1,4 +1,5 @@
 ﻿using ChatApp.Client.Models;
+using ChatApp.Client.ViewModels;
 using ChatApp.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,6 +58,24 @@ namespace ChatApp.Data
                 chatGroup.Memebers.Add(chatGroupMembers);
                 await dbContext.SaveChangesAsync();
             }
+        }
+
+        
+        public async Task CreateChat(ChatGroupView viewModel)
+        {
+
+            if (dbContext.ChatGroups.Where(c => c.Name == viewModel.Name).Any())
+            {
+                // chatName already claimed
+                return;
+            }
+
+            ChatGroup chatGroup = new ChatGroup(viewModel);
+            chatGroup.OwnerId = -1;
+
+
+            dbContext.ChatGroups.Add(chatGroup);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

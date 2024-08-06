@@ -1,0 +1,90 @@
+﻿@page "/chat/create"
+@using System.ComponentModel.DataAnnotations
+@using ChatApp.Client.Models
+@using ChatApp.Client.ViewModels
+@implements IDisposable
+@inject IChatsRepository ChatsRepo
+
+<div class="row">
+    <div class="col-md-5">
+        <section>
+            <EditForm EditContext="editContext" method="post" OnValidSubmit="CreateChatGroup" FormName="chatForm">
+                <h2>Create new chat group.</h2>
+                <hr />
+                
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="InputModel.Name" id="Name" class="form-control" autocomplete="false" aria-required="true" placeholder="namexample" />
+                    <label for="Name" class="form-label">Chat Name</label>
+                    <ValidationMessage For="() => InputModel.Name" class="text-danger" />
+                </div>
+
+                <div class="form-floating mb-3">
+                    <InputTextArea style="height: 200px;" @bind-Value="InputModel.Description" class="form-control" autocomplete="false" aria-required="true" placeholder="anything about chat group..." />
+                    <label for="ChatDescription" class="form-label">Description</label>
+                    <ValidationMessage For="() => InputModel.Description" class="text-danger" />
+                </div>
+
+                <div class="checkbox mb-3">
+                    <label class="form-label">
+                        <InputCheckbox @bind-Value="InputModel.IsPublic" class="darker-border-checkbox form-check-input" />
+                        Is public? <span class="text-muted small">(Chat will be visible in "Browse Chat Groups" window)</span>
+                    </label>
+                </div>
+                <div class="text-danger text-center py-3">@errorMessage</div>
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Create</button>
+                </div>
+
+            </EditForm>
+        </section>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    private HttpContext httpContext { get; set; }
+
+    [SupplyParameterFromForm]
+    private ChatGroupView InputModel { get; set; }
+
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
+    private string? errorMessage;
+    private bool isAuthented = false;
+    private string userName = "";
+
+    protected override void OnInitialized()
+    {
+        InputModel ??= new();
+        editContext = new(InputModel);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        messageStore = new(editContext);
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnValidationRequested -= HandleValidationRequested;
+        }
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        messageStore?.Clear();
+
+
+        if (string.IsNullOrEmpty(InputModel.Name) || InputModel.Name.Length < 2 || InputModel.Name.Length > 255)
+        {
+            messageStore?.Add(() => InputModel.Name, "Chat group name must be between 2 and 255 characters in length.");
+        }
+    }
+
+    private async Task CreateChatGroup()
+    {
+        Console.WriteLine("Create");
+        await ChatsRepo.CreateChat(InputModel);
+    }
+
+}

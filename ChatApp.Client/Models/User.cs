@@ -1,11 +1,16 @@
-﻿using System.Xml.Linq;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Xml.Linq;
 
 namespace ChatApp.Client.Models
 {
     public class User
     {
         public int Id { get; set; }
+
+        [Column(TypeName = "VARCHAR(255)")]
         public string Login { get; set; }
+        
+        [Column(TypeName = "VARCHAR(255)")]
         public string Password { get; set; }
         public User() { }
         public User(string login, string password)

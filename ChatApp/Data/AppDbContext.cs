@@ -15,6 +15,8 @@ namespace ChatApp.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<ChatGroup> ChatGroups { get; set; }
 
+        // public DbSet<> ChatGroups { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // modelBuilder.Entity<ChatGroup>().HasOne(x => x.Owner).WithMany().OnDelete(DeleteBehavior.NoAction);

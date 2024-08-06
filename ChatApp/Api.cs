@@ -26,6 +26,7 @@ namespace ChatApp
             group.MapGet("/chat/{chatName}/messages", GetChatMessages).WithName("GetChatMessages");
             group.MapGet("/chat/{chatName}/isParticipant/{userName}", IsChatParticipant).WithName("IsChatParticipant");
             group.MapPost("/chat/{chatName}/join", JoinChat).WithName("JoinChat");
+            // group.MapGet("/chat/checkName/{chatName}", IsChatNameClaimed).WithName("IsChatNameClaimed");
 
             return group;
         }
@@ -118,9 +119,7 @@ namespace ChatApp
             return Results.Ok(new BooleanResponce(isChatParticipant));
         }
 
-        private static async Task<IResult> JoinChat(HttpContext httpContext, 
-            IUsersRepository usersRepo, IChatsRepository chatGroupsRepo,
-
+        private static async Task<IResult> JoinChat(HttpContext httpContext,  IUsersRepository usersRepo, IChatsRepository chatGroupsRepo, 
             [FromRoute] string chatName)
         {
             if (!httpContext.User.Identity!.IsAuthenticated)
@@ -134,6 +133,13 @@ namespace ChatApp
 
             return Results.NoContent();
         }
+
+        /*public static async Task<IResult> IsChatNameClaimed(HttpContext httpContext, IChatsRepository chatGroupsRepo, [FromRoute] string chatName)
+        {
+            return await chatGroupsRepo.GetByName(chatName) == null
+                    ? Results.Ok(new BooleanResponce(false))
+                    : Results.Ok(new BooleanResponce(true));
+        }*/
 
     }
 }
