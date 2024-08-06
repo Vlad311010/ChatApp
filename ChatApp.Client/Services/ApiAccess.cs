@@ -1,8 +1,5 @@
 ﻿using ChatApp.Client.Models;
-using System.Net.Http;
-using System;
 using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 using System.Text.Json;
 using ChatApp.Client.ApiUtils;
 
@@ -64,6 +61,12 @@ namespace ChatApp.Client.Services
         {
             BooleanResponce? response = await httpClient.GetFromJsonAsync<BooleanResponce>($"api/chat/{chatName}/IsParticipant/{userName}");
             return response != null ? response.value : false;
+        }
+
+        public async Task<string> GetChatDescription(string chatName)
+        {
+            var response = await httpClient.GetStringAsync($"api/chat/{chatName}/description");
+            return response;
         }
 
         public async Task JoinChat(string chatName)

@@ -25,6 +25,7 @@ namespace ChatApp
 
             group.MapGet("/chat/{chatName}/messages", GetChatMessages).WithName("GetChatMessages");
             group.MapGet("/chat/{chatName}/isParticipant/{userName}", IsChatParticipant).WithName("IsChatParticipant");
+            group.MapGet("/chat/{chatName}/description", GetChatDescription).WithName("GetChatDescription");
             group.MapPost("/chat/{chatName}/join", JoinChat).WithName("JoinChat");
             group.MapPost("/chat/{chatName}/leave", LeaveChat).WithName("LeaveChat");
             group.MapPost("/chat/{chatName}/invite/{userName}", InviteToChat).WithName("InviteUser");
@@ -122,6 +123,15 @@ namespace ChatApp
             bool isChatParticipant = user != null && chatGroup != null && chatGroup.Memebers != null &&
                 chatGroup.Memebers.Contains(new ChatGroupMembers(chatGroup, user));
             return Results.Ok(new BooleanResponce(isChatParticipant));
+        }
+
+        private static async Task<IResult> GetChatDescription(IChatsRepository chatGroupsRepo, [FromRoute] string chatName)
+        {
+            var chat = await chatGroupsRepo.GetByName(chatName);
+            if (chat == null)
+                return Results.NotFound();
+
+            return chat.Description == null ? Results.NoContent() : Results.Ok(chat.Description);
         }
 
         private static async Task<IResult> JoinChat(HttpContext httpContext, IUsersRepository usersRepo, IChatsRepository chatGroupsRepo,

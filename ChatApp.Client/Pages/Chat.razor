@@ -18,7 +18,16 @@
 <SpinnerComponent IsLoading=@(isLoading)>
     @if (!chatMember)
     {
-        <div class="chat-window" id="chat-window" @ref=chatWindow>
+        <div class="chat-window text-center bg-dark bg-gradient text-white" id="chat-window" @ref=chatWindow>
+
+            @if (!string.IsNullOrEmpty(chatDescription))
+            {
+                <h4 class="py-5">Chat Description</h4>
+                <div>
+                    @chatDescription
+                </div>
+            }
+
         </div>
 
         <hr>
@@ -57,6 +66,9 @@
 @code {
     [Parameter]
     public string ChatName { get; set; } = string.Empty;
+
+
+    private string chatDescription = "";
 
     private ElementReference chatWindow;
 
@@ -116,6 +128,8 @@
         currentUserName = state.User.Identity!.Name!;
 
         chatMember = await Api.IsChatParticipantAsync(ChatName, currentUserName);
+        if (!chatMember)
+            chatDescription = await Api.GetChatDescription(ChatName);
         isLoading = false;
     }
 

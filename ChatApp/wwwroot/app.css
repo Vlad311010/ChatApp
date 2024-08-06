@@ -172,4 +172,9 @@ html {
     }
 
 
+.bg-blocked {
+    --bs-bg-opacity: 1.0;
+    background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity)) !important;
+}
+
 
