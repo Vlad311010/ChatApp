@@ -1,8 +1,11 @@
 ﻿@page "/chat/{chatName}/invite"
 @using ChatApp.Client.ApiUtils
 @using ChatApp.Client.Models
+@using app.Authorization
+@inject NavigationManager Navigation
 @inject IChatsRepository ChatsRepo
 @inject IUsersRepository UsersRepo
+@inject IAuthorizationService AuthorizationService
 
 <h3>InviteToChat</h3>
 
@@ -30,14 +33,29 @@
 
     
 @code {
-    // TODO: Access to page by ownerOnly politic
     [Parameter]
     public string chatName { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
     private string UserName { get; set; } = "";
 
     private string? errorMessage;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        ChatGroup? chat = await ChatsRepo.GetByName(chatName);
+        
+        AuthorizationResult authorizationResult = await AuthorizationService.AuthorizeAsync(HttpContext.User!, null, new OwnerRequirement(chat.OwnerId));
+        
+        if (!authorizationResult.Succeeded)
+            Navigation.NavigateTo("/forbidden");
+            
+    }
 
     private async Task InviteUser()
     {

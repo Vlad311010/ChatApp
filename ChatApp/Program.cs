@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using ChatApp.Interfaces;
 using ChatApp.Client;
 using Microsoft.AspNetCore.Components.Authorization;
+using app.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +28,19 @@ builder.Services.AddAuthorizationCore();
 
 builder.Services.AddAuthorization(options =>
 {
+    /*options.AddPolicy("Owner", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new OwnerRequirement(-1));
+    });
+
+    options.AddPolicy("ChatMember", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.Requirements.Add(new ChatMemberRequirement(""));
+    });*/
 });
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(cookieOptions => {
     cookieOptions.ExpireTimeSpan = TimeSpan.FromMinutes(20);
     cookieOptions.LoginPath = "/Login";
@@ -51,6 +65,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IUsersRepository, UsersRepositoryDb>();
 builder.Services.AddScoped<IChatsRepository, ChatsRepositoryDb>();
 builder.Services.AddScoped<IMessagesRepository, MessagesRepositoryDb>();
+
+builder.Services.AddSingleton<IAuthorizationHandler, OwnerAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ChatMemberAuthorizationHandler>();
 
 var app = builder.Build();
 

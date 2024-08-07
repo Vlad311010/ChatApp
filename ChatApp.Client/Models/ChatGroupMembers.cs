@@ -14,6 +14,12 @@ namespace ChatApp.Client.Models
             UserId = user.Id;
         }
 
+        public ChatGroupMembers(int chatGroupId, int userId)
+        {
+            ChatGroupId = chatGroupId;
+            UserId = userId;
+        }
+
         public bool Equals(ChatGroupMembers other)
         {
             return other.UserId == UserId && other.ChatGroupId == ChatGroupId;
