@@ -55,7 +55,7 @@
     else 
     {
         <div class="chat-input-container">
-            <input @bind="messageInput" type="text" id="chatInput" class="chat-input" placeholder="Type your message...">
+            <input @bind="messageInput" @onkeyup="Enter" type="text" id="chatInput" class="chat-input" placeholder="Type your message...">
             <button @onclick="Send" class="btn-send" disabled="@(!IsConnected)">Send</button>
         </div>
     }
@@ -137,11 +137,20 @@
     }
 
 
+    private async Task Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await Send();
+        }
+    }
+
     private async Task Send()
     {
         if (!string.IsNullOrEmpty(messageInput) && hubConnection is not null)
         {
             await hubConnection.SendAsync("SendMessage", currentUserId, currentUserName, ChatName, messageInput);
+            messageInput = "";
         }
     }
 
