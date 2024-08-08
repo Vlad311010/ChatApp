@@ -7,13 +7,12 @@
 @inject IUsersRepository UsersRepo
 @inject IAuthorizationService AuthorizationService
 
-<h3>InviteToChat</h3>
 
 <div class="row">
     <div class="col-md-5">
         <section>
             <EditForm Model="UserName" method="post" OnValidSubmit="InviteUser" FormName="loginForm">
-                <h2>Use a local account to log in.</h2>
+                <h2>Invite user to chat '@chatName'.</h2>
                 <hr />
                 <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
@@ -23,7 +22,7 @@
                 </div>
                 <div class="text-danger text-center py-3">@errorMessage</div>
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Invite</button>
                 </div>
 
             </EditForm>
@@ -39,6 +38,9 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [CascadingParameter]
+    private HttpClient HttpClient { get; set; } = default!;
+
     [SupplyParameterFromForm]
     private string UserName { get; set; } = "";
 
@@ -50,8 +52,7 @@
     {
         ChatGroup? chat = await ChatsRepo.GetByName(chatName);
         
-        AuthorizationResult authorizationResult = await AuthorizationService.AuthorizeAsync(HttpContext.User!, null, new OwnerRequirement(chat.OwnerId));
-        
+        AuthorizationResult authorizationResult = await AuthorizationService.AuthorizeAsync(HttpContext.User!, null, new OwnerRequirement(chat.OwnerId));        
         if (!authorizationResult.Succeeded)
             Navigation.NavigateTo("/forbidden");
             

@@ -1,4 +1,5 @@
-﻿using ChatApp.Client.Models;
+﻿using ChatApp.Client.ApiUtils;
+using ChatApp.Client.Models;
 
 namespace ChatApp.Interfaces
 {
@@ -6,5 +7,6 @@ namespace ChatApp.Interfaces
     {
         Task<IEnumerable<User>> All();
         Task<User?> GetByLogin(string login);
+        Task<BooleanResponce> Create(UserData user);
     }
 }

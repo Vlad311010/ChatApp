@@ -16,29 +16,20 @@
 <PageTitle>Chat</PageTitle>
 
 <SpinnerComponent IsLoading=@(isLoading)>
+    <div class="chat-window text-center @(!chatMember ? "bg-dark bg-gradient text-white" : "") " id="chat-window" @ref=chatWindow>
     @if (!chatMember)
     {
-        <div class="chat-window text-center bg-dark bg-gradient text-white" id="chat-window" @ref=chatWindow>
 
-            @if (!string.IsNullOrEmpty(chatDescription))
-            {
-                <h4 class="py-5">Chat Description</h4>
-                <div>
-                    @chatDescription
-                </div>
-            }
-
-        </div>
-
-        <hr>
-
-        <div class="chat-input-container">
-            <button @onclick="JoinChat" class="w-100 btn-join" disabled="@(!IsConnected)">Join Chat</button>
-        </div>
+        @if (!string.IsNullOrEmpty(chatDescription))
+        {
+            <h4 class="py-5">Chat Description</h4>
+            <div>
+                @chatDescription
+            </div>
+        }
     }
     else if (chatMessages != null) 
     {
-        <div class="chat-window" id="chat-window" @ref=chatWindow>
             @foreach (var message in chatMessages)
             {
                 if (currentUserId == message.UserId)
@@ -50,10 +41,19 @@
                     <ChatMessage type="received" messageModel="message" />
                 }
             }
-        </div>
+    }
+    </div>
     
-        <hr>
+    <hr>
 
+    @if (!chatMember) 
+    {
+        <div class="chat-input-container">
+            <button @onclick="JoinChat" class="w-100 btn-join" disabled="@(!IsConnected)">Join Chat</button>
+        </div>
+    }
+    else 
+    {
         <div class="chat-input-container">
             <input @bind="messageInput" type="text" id="chatInput" class="chat-input" placeholder="Type your message...">
             <button @onclick="Send" class="btn-send" disabled="@(!IsConnected)">Send</button>
@@ -117,11 +117,11 @@
             // Console.WriteLine(message);
         });
 
+        Events.onChatGroupJoin += ReloadChat;
+
         await hubConnection.StartAsync();
 
         await hubConnection.SendAsync("AddToGroup", ChatName);
-
-        chatMessages = await Api.GetMessagesAsync(ChatName);
 
         var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         Int32.TryParse(state.User.FindFirst("UserId")?.Value, out currentUserId);
@@ -130,8 +130,12 @@
         chatMember = await Api.IsChatParticipantAsync(ChatName, currentUserName);
         if (!chatMember)
             chatDescription = await Api.GetChatDescription(ChatName);
+        else
+            chatMessages = await Api.GetMessagesAsync(ChatName);
+
         isLoading = false;
     }
+
 
     private async Task Send()
     {
@@ -157,6 +161,11 @@
         StateHasChanged();
     }
 
+    private void ReloadChat(string chatName)
+    {
+        Navigation.NavigateTo($"/chat/{chatName}", true);
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (hubConnection is not null)
@@ -164,5 +173,6 @@
             await hubConnection.SendAsync("RemoveFromGroup", ChatName);
             await hubConnection.DisposeAsync();
         }
+        Events.onChatGroupJoin -= ReloadChat;
     }
 }

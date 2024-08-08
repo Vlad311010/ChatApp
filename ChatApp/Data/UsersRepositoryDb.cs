@@ -1,4 +1,5 @@
-﻿using ChatApp.Client.Models;
+﻿using ChatApp.Client.ApiUtils;
+using ChatApp.Client.Models;
 using ChatApp.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,19 @@ namespace ChatApp.Data
         public async Task<User?> GetByLogin(string login)
         {
             return await dbContext.Users.Where(u => u.Login == login).SingleOrDefaultAsync();
+        }
+
+        public async Task<BooleanResponce> Create(UserData user)
+        {
+            if (dbContext.Users.Any(u => u.Login == user.Login))
+            {
+                return new BooleanResponce(false, $"User with login '{user.Login}' already exists");
+            }
+
+            
+            dbContext.Users.Add(new User(user));
+            await dbContext.SaveChangesAsync();
+            return new BooleanResponce(true);
         }
 
     }

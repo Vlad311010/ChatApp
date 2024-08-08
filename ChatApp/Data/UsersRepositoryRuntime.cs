@@ -1,4 +1,5 @@
-﻿using ChatApp.Client.Models;
+﻿using ChatApp.Client.ApiUtils;
+using ChatApp.Client.Models;
 using ChatApp.Interfaces;
 
 namespace ChatApp.Data
@@ -20,6 +21,12 @@ namespace ChatApp.Data
         public Task<User?> GetByLogin(string login)
         {
             return Task.FromResult(users.Where(u => u.Login == login).SingleOrDefault());
+        }
+
+        public Task<BooleanResponce> Create(UserData user)
+        {
+            users.Add(new User(user));
+            return Task.FromResult(new BooleanResponce(true));
         }
     }
 }

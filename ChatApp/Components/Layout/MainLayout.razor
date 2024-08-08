@@ -7,22 +7,7 @@
 
     <main>
         <div class="top-row">
-            @if (HttpContext.User.Identity!.IsAuthenticated)
-            {
-                <form action="api/Logout" method="post">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="ReturnUrl" value="/login" />
-                    <button class="btn btn-secondary" type="submit">
-                        Logout
-                    </button>
-                </form>
-            }
-            else
-            {
-                <NavLink class="nav-link" href="login">
-                    <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Login
-                </NavLink>
-            }
+            
         </div>
 
         <article class="content px-4">

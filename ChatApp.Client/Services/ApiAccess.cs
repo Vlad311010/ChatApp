@@ -93,12 +93,6 @@ namespace ChatApp.Client.Services
             return chats;
         }
 
-        public async Task InviteToChat(string chatName, string userName)
-        {
-            HttpResponseMessage responce = await httpClient.PostAsync($"api/chat/{chatName}/invite/{userName}", null!);
-            responce.EnsureSuccessStatusCode();
-        }
-
         public async Task<ChatGroup[]> PublicChats()
         {
             ChatGroup[]? chats = await httpClient.GetFromJsonAsync<ChatGroup[]>("api/chats/public");

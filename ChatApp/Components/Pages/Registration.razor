@@ -1,0 +1,82 @@
+﻿@page "/registration"
+@using ChatApp.Client.ApiUtils
+@inject IUsersRepository UsersRepo
+@inject NavigationManager Navigation
+
+<PageTitle>Registration</PageTitle>
+
+<h1>Registration</h1>
+<div class="row">
+    <div class="col-md-5">
+        <section>
+            <EditForm EditContext="editContext" method="post" OnValidSubmit="Registrate" FormName="loginForm" Context="formContext">
+                <hr />
+                <ValidationSummary class="text-danger" role="alert" />
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="InputModel.Login" class="form-control" autocomplete="false" aria-required="true" placeholder="namexample" />
+                    <label for="email" class="form-label">Login</label>
+                    <ValidationMessage For="() => InputModel.Login" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="InputModel.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                    <label for="password" class="form-label">Password</label>
+                    <ValidationMessage For="() => InputModel.Password" class="text-danger" />
+                </div>
+                <div class="text-danger text-center py-3">@errorMessage</div>
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Create Account</button>
+                </div>
+
+            </EditForm>
+        </section>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private UserData InputModel { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private EditContext? editContext;
+    private ValidationMessageStore? messageStore;
+
+    private string? errorMessage { get; set; }
+
+    protected override void OnInitialized()
+    {
+        InputModel ??= new();
+        editContext = new(InputModel);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        messageStore = new(editContext);
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        messageStore?.Clear();
+
+
+        if (string.IsNullOrEmpty(InputModel.Login) || InputModel.Login.Length < 2 || InputModel.Login.Length > 255)
+        {
+            messageStore?.Add(() => InputModel.Login!, "Login field must be between 2 and 255 characters in length.");
+        }
+
+        if (string.IsNullOrEmpty(InputModel .Password))
+        {
+            messageStore?.Add(() => InputModel.Password!, "Password is required");
+        }
+    }
+
+
+    private async Task Registrate()
+    {
+        var responce = await UsersRepo.Create(InputModel);
+        if (!responce.value)
+            errorMessage = responce.message;
+        else
+            Navigation.NavigateTo("/login");
+
+
+    }
+}

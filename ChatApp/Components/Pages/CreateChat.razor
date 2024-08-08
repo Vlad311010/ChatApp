@@ -1,9 +1,11 @@
 ﻿@page "/chat/create"
 @using System.ComponentModel.DataAnnotations
+@using ChatApp.Client.ApiUtils
 @using ChatApp.Client.Models
 @using ChatApp.Client.ViewModels
 @implements IDisposable
 @inject IChatsRepository ChatsRepo
+@attribute [Authorize]
 
 <div class="row">
     <div class="col-md-5">
@@ -83,8 +85,12 @@
 
     private async Task CreateChatGroup()
     {
-        Console.WriteLine("Create");
-        await ChatsRepo.CreateChat(InputModel);
+        InputModel.OwnerId = Int32.Parse(httpContext.User.FindFirst("UserId").Value);
+        BooleanResponce responce = await ChatsRepo.CreateChat(InputModel, true);
+        if (!responce.value)
+        {
+            errorMessage = responce.message;
+        }
     }
 
 }

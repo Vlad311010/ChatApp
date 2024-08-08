@@ -23,7 +23,6 @@ namespace ChatApp
             group.MapGet("/chat/{chatName}/description", GetChatDescription).WithName("GetChatDescription").RequireAuthorization();
             group.MapPost("/chat/{chatName}/join", JoinChat).WithName("JoinChat").RequireAuthorization();
             group.MapPost("/chat/{chatName}/leave", LeaveChat).WithName("LeaveChat").RequireAuthorization();
-            group.MapPost("/chat/{chatName}/invite/{userName}", InviteToChat).WithName("InviteUser");
             // group.MapGet("/chat/checkName/{chatName}", IsChatNameClaimed).WithName("IsChatNameClaimed");
 
             group.MapGet("/chats/my", MyChats).WithName("MyChats").RequireAuthorization();
@@ -151,22 +150,6 @@ namespace ChatApp
             User? user = await usersRepo.GetByLogin(httpContext.User.Identity.Name!);
             await chatGroupsRepo.RemoveUser(user!.Id, chatName);
 
-            return Results.NoContent();
-        }
-
-        private static async Task<IResult> InviteToChat(IAuthorizationService authorizationService, HttpContext httpContext, IUsersRepository usersRepo, IChatsRepository chatGroupsRepo,
-            [FromRoute] string chatName, [FromRoute] string userName)
-        {
-            // authenticated + chat owner 
-            ChatGroup? chat = await chatGroupsRepo.GetByName(chatName);
-            if (chat == null || httpContext.User.FindFirstValue("UserId") != chat.OwnerId.ToString())
-                return Results.Forbid();
-
-            User? userToInvite = await usersRepo.GetByLogin(userName);
-            if (userToInvite == null)
-                return Results.NotFound($"User {userName} not found");
-
-            await chatGroupsRepo.AddUser(userToInvite.Id, chatName);
             return Results.NoContent();
         }
 

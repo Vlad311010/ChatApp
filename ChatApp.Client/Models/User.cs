@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using ChatApp.Client.ApiUtils;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Xml.Linq;
 
 namespace ChatApp.Client.Models
@@ -17,6 +18,12 @@ namespace ChatApp.Client.Models
         {
             Login = login;
             Password = password;
+        }
+
+        public User(UserData userData)
+        {
+            Login = userData.Login;
+            Password = userData.Password;
         }
 
         public override bool Equals(object? obj)

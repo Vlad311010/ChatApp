@@ -1,6 +1,8 @@
-﻿using ChatApp.Client.Models;
+﻿using ChatApp.Client.ApiUtils;
+using ChatApp.Client.Models;
 using ChatApp.Client.ViewModels;
 using ChatApp.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatApp.Data
@@ -63,22 +65,28 @@ namespace ChatApp.Data
             return dbContext.ChatGroups.Where(c => userChats.Contains(c.Id));
         }
 
-
-        public async Task CreateChat(ChatGroupView viewModel)
+        [Authorize]
+        public async Task<BooleanResponce> CreateChat(ChatGroupView viewModel, bool addCreatorToChat = false)
         {
-
             if (dbContext.ChatGroups.Where(c => c.Name == viewModel.Name).Any())
             {
                 // chatName already claimed
-                return;
+                return new BooleanResponce(false, "Chat with such name already exists");
             }
 
             ChatGroup chatGroup = new ChatGroup(viewModel);
-            chatGroup.OwnerId = -1;
+            chatGroup.OwnerId = viewModel.OwnerId;
 
 
             dbContext.ChatGroups.Add(chatGroup);
+            dbContext.SaveChanges();
+            if (addCreatorToChat)
+            {
+                await AddUser(viewModel.OwnerId, viewModel.Name);
+            }
+
             await dbContext.SaveChangesAsync();
+            return new BooleanResponce(true);
         }
 
     }
