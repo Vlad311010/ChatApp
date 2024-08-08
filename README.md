@@ -4,7 +4,7 @@ This chat application is built using ASP.NET Blazor with WebAssembly, providing 
 
 ## How To Launch
 1. Make sure you have installe .NET SDK and Entity Framework Core tools globally (`dotnet tool install --global dotnet-ef`).
-2. In project folder open OutOfOfficeApp folder and run `dotnet ef database update`. This command will create database and populate it with initial data.
+2. In project folder open ChatApp folder and run `dotnet ef database update`. This command will create database and populate it with initial data.
 3. Execute application:
    1. Open and execute project with Visual Studio.
    2. Or you can build and run project with `dotnet run` (before this set ASPNETCORE_ENVIRONMENT variable to "Development"  `setx ASPNETCORE_ENVIRONMENT "Development"`).
