@@ -40,9 +40,11 @@ namespace ChatApp
 
             User? user = await users.GetByLogin(loginRequest.Login);
             if (user == null)
-            {
                 return Results.NotFound();
-            }
+            
+            if (user.Password != loginRequest.Password)
+                return Results.Unauthorized();
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, loginRequest.Login),

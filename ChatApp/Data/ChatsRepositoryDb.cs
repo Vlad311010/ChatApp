@@ -61,7 +61,7 @@ namespace ChatApp.Data
             if (user == null)
                 return new List<ChatGroup>();
 
-            int[] userChats = dbContext.ChatGroupmembers.Where(m => m.UserId == user.Id).Select(m => m.ChatGroupId).ToArray();
+            int[] userChats = dbContext.ChatGroupMembers.Where(m => m.UserId == user.Id).Select(m => m.ChatGroupId).ToArray();
             return dbContext.ChatGroups.Where(c => userChats.Contains(c.Id));
         }
 

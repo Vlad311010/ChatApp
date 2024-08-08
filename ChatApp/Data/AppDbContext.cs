@@ -14,7 +14,7 @@ namespace ChatApp.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<ChatGroup> ChatGroups { get; set; }
-        public DbSet<ChatGroupMembers> ChatGroupmembers { get; set; }
+        public DbSet<ChatGroupMembers> ChatGroupMembers { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

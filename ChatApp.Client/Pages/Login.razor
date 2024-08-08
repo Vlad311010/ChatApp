@@ -45,10 +45,7 @@
                         <div class="text-danger text-center py-3">@errorMessage</div>
                         <div>
                             <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                            <button type="submit" class="btn btn-lg btn-secondary" @onclick="@(() => LoginRuf())">Ruf</button>
-                            <button type="submit" class="btn btn-lg btn-secondary" @onclick="@(() => LoginAzter())">Azter</button>
                         </div>
-
                     </EditForm>           
                 </section>
             </div>
@@ -106,21 +103,4 @@
             errorMessage = "Error: Invalid login attempt.";
         }
     }
-
-    public async Task LoginRuf()
-    {
-        UserData inputModel = new UserData() { Id = 1, Login="Ruf", Password="1" };
-        UserData? userData = await Api.LoginAsync(inputModel);
-        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        AuthenticationStateProvider.LoginUser(userData);
-    }
-
-    public async Task LoginAzter()
-    {
-        UserData inputModel = new UserData() { Id = 2, Login = "Azter", Password = "1" };
-        UserData? userData = await Api.LoginAsync(inputModel);
-        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        AuthenticationStateProvider.LoginUser(userData);
-    }
-
 }
