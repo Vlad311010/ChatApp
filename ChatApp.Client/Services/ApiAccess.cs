@@ -17,9 +17,14 @@ namespace ChatApp.Client.Services
             this.events = events;
         }
 
-        public async Task<List<Message>> GetMessagesAsync(string chatName)
+        public async Task<List<Message>> GetMessagesAsync(string chatName, int take)
         {
-            List<Message>? messages = await httpClient.GetFromJsonAsync<List<Message>>($"api/chat/{chatName}/messages");
+            List<Message>? messages = await httpClient.GetFromJsonAsync<List<Message>>($"api/chat/{chatName}/messages?take={take}");
+            return messages == null ? new List<Message>() : messages;
+        }
+        public async Task<List<Message>> GetMessagesAsync(string chatName, int topMessageId, int take)
+        {
+            List<Message>? messages = await httpClient.GetFromJsonAsync<List<Message>>($"api/chat/{chatName}/messages?startMessageId={topMessageId}&take={take}");
             return messages == null ? new List<Message>() : messages;
         }
 

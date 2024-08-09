@@ -14,17 +14,29 @@ namespace ChatApp.Data
             this.chatsRepository = chatsRepository;
         }
 
-        public async Task<IEnumerable<Message>> ChatMessages(int chatId)
-        {
-            return await dbContext.Messages.Where(u => u.ChatId == chatId).ToArrayAsync();
-        }
-
-        public async Task<IEnumerable<Message>> ChatMessages(string chatName)
+        public async Task<IEnumerable<Message>> ChatMessages(string chatName, int messagesToTake)
         {
             return await dbContext.Messages
                 .Include(m => m.Chat)
                 .Where(u => u.Chat.Name == chatName)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(messagesToTake)
                 .Include(m => m.User)
+                .Reverse()
+                .ToArrayAsync();
+        }
+
+        public async Task<IEnumerable<Message>> ChatMessages(string chatName, int startMessageId, int messagesToTake)
+        {
+            DateTime startMessageTime = (await dbContext.Messages.Where(m => m.Id == startMessageId).SingleAsync()).CreatedAt;
+
+            return await dbContext.Messages
+                .Include(m => m.Chat)
+                .Where(m => m.Chat.Name == chatName &&  m.CreatedAt < startMessageTime)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(messagesToTake)
+                .Include(m => m.User)
+                .Reverse()
                 .ToArrayAsync();
         }
 

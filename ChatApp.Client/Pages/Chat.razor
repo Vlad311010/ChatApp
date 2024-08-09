@@ -13,13 +13,26 @@
 
 @attribute [Authorize]
 
+<script>
+
+    AddOnScrollEvent = () => {
+        const scroll = document.getElementById("chat-window");
+        scroll.addEventListener("scroll", (event) => {
+            if (scroll.scrollTop === 0) {
+                event.preventDefault();
+                event.stopPropagation();
+                scroll.scrollTop = 20; 
+                DotNet.invokeMethodAsync('ChatApp.Client', 'ChatTopReached');
+            };
+        })
+    };
+</script>
 <PageTitle>Chat</PageTitle>
 
 <SpinnerComponent IsLoading=@(isLoading)>
-    <div class="chat-window text-center @(!chatMember ? "bg-dark bg-gradient text-white" : "") " id="chat-window" @ref=chatWindow>
-    @if (!chatMember)
+<div class="chat-window text-center @(!isChatMember ? "bg-dark bg-gradient text-white" : "") " id="chat-window" @ref=chatWindow>
+    @if (!isChatMember)
     {
-
         @if (!string.IsNullOrEmpty(chatDescription))
         {
             <h4 class="py-5">Chat Description</h4>
@@ -28,25 +41,25 @@
             </div>
         }
     }
-    else if (chatMessages != null) 
+    else
     {
-            @foreach (var message in chatMessages)
+        @foreach (var message in chatMessages)
+        {
+            if (currentUserId == message.UserId)
             {
-                if (currentUserId == message.UserId)
-                {
-                    <ChatMessage type="sent" messageModel="message" />
-                }
-                else
-                {
-                    <ChatMessage type="received" messageModel="message" />
-                }
+                <ChatMessage type="sent" messageModel="message" />
             }
+            else
+            {
+                <ChatMessage type="received" messageModel="message" />
+            }
+        }
     }
     </div>
     
     <hr>
 
-    @if (!chatMember) 
+    @if (!isChatMember) 
     {
         <div class="chat-input-container">
             <button @onclick="JoinChat" class="w-100 btn-join" disabled="@(!IsConnected)">Join Chat</button>
@@ -57,7 +70,10 @@
         <div class="chat-input-container">
             <input @bind="messageInput" @onkeyup="Enter" type="text" id="chatInput" class="chat-input" placeholder="Type your message...">
             <button @onclick="Send" class="btn-send" disabled="@(!IsConnected)">Send</button>
+            <button @onclick="async () => {await LoadMessages().ContinueWith((_) => isLoading = false); }" class="btn-send" disabled="@(!IsConnected)">Load</button>
         </div>
+
+        
     }
 </SpinnerComponent>
 
@@ -71,28 +87,41 @@
     private string chatDescription = "";
 
     private ElementReference chatWindow;
+    private ElementReference lastMessage;
 
     private HubConnection? hubConnection;
-    private List<Message> chatMessages = default!;
+    private List<Message> chatMessages = new List<Message>();
 
-    private bool chatMember = false;
+    private int? topMessageId = null;
+    private bool isChatMember = false;
     private int currentUserId = -1;
     private string currentUserName = "";
     private string? messageInput;
     private bool isLoading = true;
+    private string? lastLoadedMessage;
+
+    private const int messagesPerRequest = 5;
 
     public bool IsConnected =>
         hubConnection?.State == HubConnectionState.Connected;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender) 
+        if (!firstRender && !isLoading)
+        {
+            await JS.InvokeVoidAsync("AddOnScrollEvent");
             await ScrollToBottom();
+        }
     }
 
     private async Task ScrollToBottom()
     {
         await JS.InvokeVoidAsync("ScrollToBottom", chatWindow);
+    }
+
+    private async Task ScrollTo(string elementId)
+    {
+        await JS.InvokeVoidAsync("ScrollTo", elementId);
     }
 
     protected override async Task OnInitializedAsync()
@@ -127,13 +156,18 @@
         Int32.TryParse(state.User.FindFirst("UserId")?.Value, out currentUserId);
         currentUserName = state.User.Identity!.Name!;
 
-        chatMember = await Api.IsChatParticipantAsync(ChatName, currentUserName);
-        if (!chatMember)
-            chatDescription = await Api.GetChatDescription(ChatName);
-        else
-            chatMessages = await Api.GetMessagesAsync(ChatName);
+        isChatMember = await Api.IsChatParticipantAsync(ChatName, currentUserName);
 
-        isLoading = false;
+
+        if (!isChatMember) 
+        {
+            isLoading = false;
+            chatDescription = await Api.GetChatDescription(ChatName);
+        }
+        else 
+            await LoadMessages().ContinueWith((_) => isLoading = false);
+
+        onChatTopReached += LoadMessages;
     }
 
 
@@ -145,6 +179,48 @@
         }
     }
 
+
+    private async Task JoinChat()
+    {
+        if (hubConnection is not null)
+        {
+            await Api.JoinChat(ChatName);
+            isChatMember = true;
+            StateHasChanged();
+        }
+    }    
+
+    private static Func<Task> onChatTopReached;
+    [JSInvokable]
+    public static async Task ChatTopReached()
+    {
+        if (onChatTopReached != null)
+        {
+            await onChatTopReached();
+        }
+    }
+
+    private async Task LoadMessages()
+    {
+        List<Message> requestMessages;
+
+        requestMessages = topMessageId == null
+        ? await Api.GetMessagesAsync(ChatName, messagesPerRequest)
+        : await Api.GetMessagesAsync(ChatName, (int)topMessageId, messagesPerRequest);
+
+        if (requestMessages.Count > 0)
+            topMessageId = requestMessages[0].Id;
+
+        if (chatMessages.Count == 0)
+            lastLoadedMessage = "message-" + requestMessages.Last().Id;
+        else 
+            lastLoadedMessage = "message-" + chatMessages[0].Id;
+        
+        chatMessages.InsertRange(0, requestMessages);
+        StateHasChanged();
+        await ScrollTo(lastLoadedMessage);
+    }
+
     private async Task Send()
     {
         if (!string.IsNullOrEmpty(messageInput) && hubConnection is not null)
@@ -154,15 +230,6 @@
         }
     }
 
-    private async Task JoinChat()
-    {
-        if (hubConnection is not null)
-        {
-            await Api.JoinChat(ChatName);
-            chatMember = true;
-            StateHasChanged();
-        }
-    }    
 
     private void AddMessage(int senderId, string senderName, int chatId, string message) 
     {

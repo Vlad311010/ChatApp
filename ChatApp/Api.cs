@@ -101,15 +101,22 @@ namespace ChatApp
             return Results.Ok(user);
         }
 
-        private static async Task<IResult> GetChatMessages(IAuthorizationService authorizationService, 
-            HttpContext httpContext, IMessagesRepository messagesRepo, [FromRoute] string chatName)
+        private static async Task<IResult> GetChatMessages(IAuthorizationService authorizationService,
+            HttpContext httpContext, IMessagesRepository messagesRepo, [FromRoute] string chatName,
+            int? startMessageId, int? take)
         {
             // authenticated + chat member
             AuthorizationResult authorizationResult = await authorizationService.AuthorizeAsync(httpContext.User!, null, new ChatMemberRequirement(chatName));
             if (!authorizationResult.Succeeded)
                 return Results.Forbid();
 
-            Message[] messages = (await messagesRepo.ChatMessages(chatName)).ToArray();
+            Message[] messages;
+            take ??= 50;
+            if (startMessageId == null)
+                messages = (await messagesRepo.ChatMessages(chatName, (int)take)).ToArray();
+            else
+                messages = (await messagesRepo.ChatMessages(chatName, (int)startMessageId, (int)take)).ToArray();
+
             return Results.Ok(messages);
         }
 

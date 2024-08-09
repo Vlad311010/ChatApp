@@ -6,16 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="app.css?v10" />
+    <link rel="stylesheet" href="app.css?v12" />
     <link rel="stylesheet" href="ChatApp.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <script>ScrollToBottom = (elem) => {
+    <script>
+        ScrollToBottom = (elem) => {
             elem.scrollTo({
-                top: elem.scrollHeight,
+                top: elem.scrollHeight * 500,
                 left: 0,
                 behavior: "smooth",
             }); 
         };
+
+        ScrollTo = (elemId) => {
+            const elem = document.getElementById(elemId);
+            elem.scrollIntoView({ behavior: "instant", block: "end", inline: "nearest" });
+        }
+
     </script>
     
     <HeadOutlet />

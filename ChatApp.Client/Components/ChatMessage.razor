@@ -2,7 +2,7 @@
 
 
 
-<div class="container mt-3 chat-message @(sidingStyle)">
+<div class="container mt-3 chat-message @(sidingStyle)" id="@($"message-{messageModel.Id}")">
     <div class="@(type) mb-3 p-3 border rounded chat-container">
         <div class="d-flex justify-content-between @(type == "sent" ? "inversed" : "")">
             <div class="sender-name fw-bold">@(type == "sent" ? "You" : messageModel.User.Login)</div>
