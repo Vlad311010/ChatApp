@@ -19,9 +19,7 @@
         const scroll = document.getElementById("chat-window");
         scroll.addEventListener("scroll", (event) => {
             if (scroll.scrollTop === 0) {
-                event.preventDefault();
-                event.stopPropagation();
-                scroll.scrollTop = 20; 
+                scroll.scrollTop = 20;
                 DotNet.invokeMethodAsync('ChatApp.Client', 'ChatTopReached');
             };
         })
@@ -110,7 +108,6 @@
         if (!firstRender && !isLoading)
         {
             await JS.InvokeVoidAsync("AddOnScrollEvent");
-            await ScrollToBottom();
         }
     }
 
